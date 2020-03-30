@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.rma2020_16570.View;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.ParseException;
@@ -88,6 +90,14 @@ public class TransactionDetailActivity extends AppCompatActivity {
             if(transaction.getTransactionInterval()!= null) transactionIntervalEditText.setText(transaction.getTransactionInterval().toString());
             if(transaction.getEndDate()!= null) endDateEditText.setText(simpleDateFormat.format(transaction.getEndDate()));
             typeSpinner.setSelection(MainActivity.filterTypes.indexOf(transaction.getType()));
+
+            //Add textChangedListeners
+            dateEditText.addTextChangedListener(new TextChangedWatcher(this, dateEditText));
+            amountEditText.addTextChangedListener(new TextChangedWatcher(this, amountEditText));
+            titleEditText.addTextChangedListener(new TextChangedWatcher(this, titleEditText));
+            itemDescriptionEditText.addTextChangedListener(new TextChangedWatcher(this, itemDescriptionEditText));
+            transactionIntervalEditText.addTextChangedListener(new TextChangedWatcher(this, transactionIntervalEditText));
+            endDateEditText.addTextChangedListener(new TextChangedWatcher(this, endDateEditText));
         }
         else {
             transaction = new Transaction();
@@ -98,6 +108,15 @@ public class TransactionDetailActivity extends AppCompatActivity {
     private View.OnClickListener saveButtonOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+
+            //Set default background color
+            dateEditText.setBackgroundResource(android.R.drawable.editbox_background);
+            amountEditText.setBackgroundResource(android.R.drawable.editbox_background);
+            titleEditText.setBackgroundResource(android.R.drawable.editbox_background);
+            itemDescriptionEditText.setBackgroundResource(android.R.drawable.editbox_background);
+            transactionIntervalEditText.setBackgroundResource(android.R.drawable.editbox_background);
+            endDateEditText.setBackgroundResource(android.R.drawable.editbox_background);
+
             Date date, endDate;
             try {
                 Log.d("Date---", dateEditText.getText().toString());
@@ -142,12 +161,28 @@ public class TransactionDetailActivity extends AppCompatActivity {
     private View.OnClickListener deleteButtonOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Bundle bundle = new Bundle();
-            bundle.putString("action", "delete");
-            Intent intent = new Intent();
-            intent.putExtras(bundle);
-            setResult(RESULT_OK, intent);
-            finish();
+            AlertDialog alertDialog = new AlertDialog.Builder(TransactionDetailActivity.this).create();
+            alertDialog.setTitle("Delete");
+            alertDialog.setMessage("Are you sure you want to delete this transaction?");
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("action", "delete");
+                    Intent intent = new Intent();
+                    intent.putExtras(bundle);
+                    setResult(RESULT_OK, intent);
+                    dialog.dismiss();
+                    finish();
+                }
+            });
+            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            alertDialog.show();
         }
     };
 }
