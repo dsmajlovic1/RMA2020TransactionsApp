@@ -9,4 +9,7 @@ public interface ITransactionListInteractor {
     void update(Transaction transaction, Transaction newTransaction);
     void delete(Transaction transaction);
     void add(Transaction transaction);
+    Double getTotalIncome();
+    Double getTotalExpenditure();
+    Double getMonthExpenditure(String month);
 }

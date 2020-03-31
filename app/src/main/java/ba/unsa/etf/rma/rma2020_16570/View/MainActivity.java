@@ -1,7 +1,9 @@
 package ba.unsa.etf.rma.rma2020_16570.View;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,10 +18,13 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import ba.unsa.etf.rma.rma2020_16570.Adapter.TypeSpinnerAdapter;
 import ba.unsa.etf.rma.rma2020_16570.Adapter.TransactionListAdapter;
+import ba.unsa.etf.rma.rma2020_16570.Model.Account;
+import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.Presenter.ITransactionListView;
 import ba.unsa.etf.rma.rma2020_16570.Presenter.TransactionListPresenter;
@@ -54,12 +59,20 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     //TransactionList position
     private int listPosition = 0;
 
+    //Account
+    Account currentUser = new Account(1000.0, 1000.0, 10.0);
+
+    //Current month
+    Month currentMonth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         transactionListPresenter = new TransactionListPresenter(this, this);
+
+        currentMonth = new Month(Calendar.getInstance().getTime());
 
         //Get view resources
         filterBySpinner = (Spinner) findViewById(R.id.filterBySpinner);
@@ -92,8 +105,14 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         transactionListView.setOnItemClickListener(onTransactionListItemClickListener);
         transactionListPresenter.refreshTransactions();
 
-        //Set addButton onClickListener
+        //Set onClickListeners
+        previousMonthButton.setOnClickListener(previousButtonOnClickListener);
+        nextMonthButton.setOnClickListener(nextButtonOnClickListener);
         addButton.setOnClickListener(addButtonOnClickListener);
+
+        //Set month
+        monthYearTextView.setText(currentMonth.toString());
+        transactionListPresenter.filterByMonth(currentMonth.getMonthNumberString());
 
     }
 
@@ -113,10 +132,27 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     }
 
     @Override
+    public void updateCurrentTransaction(Transaction transaction) {
+        Transaction selectedTransaction = (Transaction) transactionListView.getItemAtPosition(listPosition);
+        //Change the transaction
+        transactionListPresenter.updateTransaction(selectedTransaction, transaction);
+    }
+
+    @Override
+    public void addTransaction(Transaction transaction) {
+        transactionListPresenter.addTransaction(transaction);
+    }
+
+    @Override
+    public void deleteCurrentTransaction() {
+
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
 
-        Transaction transaction;
+        final Transaction transaction;
 
         if(resultCode == RESULT_OK){
             if(requestCode == 1){
@@ -125,14 +161,59 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
                     String action = bundle.getString("action");
                     if(action.equals("save")){
                         Transaction changedTransaction = (Transaction)data.getExtras().getParcelable("transaction");
-                        transaction = (Transaction) transactionListView.getItemAtPosition(listPosition);
-                        //Change the transaction
-                        transactionListPresenter.updateTransaction(transaction, changedTransaction);
+                        updateCurrentTransaction(changedTransaction);
+                        if(transactionListPresenter.getTotalExpenditure()> currentUser.getTotalLimit()
+                                || transactionListPresenter.getMonthExpenditure(currentMonth.getMonthNumberString()) > currentUser.getMonthLimit()){
+                                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                                    alertDialog.setTitle("Limit reached");
+                                    alertDialog.setMessage("Are you sure you want to make these changes?");
+                                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            //Do nothing
+                                        }
+                                    });
+                                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Transaction transaction = (Transaction) transactionListView.getItemAtPosition(listPosition);
+                                            Intent intent = new Intent(MainActivity.this, TransactionDetailActivity.class);
+                                            Bundle bundle = new Bundle();
+                                            bundle.putString("type", "edit");
+                                            bundle.putParcelable("transaction", transaction);
+                                            intent.putExtras(bundle);
+                                            MainActivity.this.startActivityForResult(intent, 1);
+                                        }
+                                    });
+                                    alertDialog.show();
+
+                        }
                     }
                     else if(action.equals("add")){
                         transaction = (Transaction)data.getExtras().getParcelable("transaction");
                         //Add the transaction
-                        transactionListPresenter.addTransaction(transaction);
+                        addTransaction(transaction);
+                        if(transactionListPresenter.getTotalExpenditure()> currentUser.getTotalLimit()
+                                || transactionListPresenter.getMonthExpenditure(currentMonth.getMonthNumberString()) > currentUser.getMonthLimit()){
+                            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                            alertDialog.setTitle("Limit reached");
+                            alertDialog.setMessage("Are you sure you want to make these changes?");
+                            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //Do nothing
+                                }
+                            });
+                            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    transactionListAdapter.remove(transaction);
+                                    transactionListPresenter.deleteTransaction(transaction);
+                                    refreshCurrentMonthTransactions();
+                                }
+                            });
+                            alertDialog.show();
+                        }
                     }
                     else{
                         //Delete the transaction
@@ -201,4 +282,37 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
             MainActivity.this.startActivityForResult(intent, 1);
         }
     };
+
+
+
+    private View.OnClickListener nextButtonOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            currentMonth.nextMonth();
+
+            monthYearTextView.setText(currentMonth.toString());
+            transactionListPresenter.filterByMonth(currentMonth.getMonthNumberString());
+            refreshCurrentMonthTransactions();
+        }
+    };
+
+    private View.OnClickListener previousButtonOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            currentMonth.previousMonth();
+
+            monthYearTextView.setText(currentMonth.toString());
+            refreshCurrentMonthTransactions();
+        }
+    };
+
+    public void refreshCurrentMonthTransactions(){
+        transactionListPresenter.filterByMonth(currentMonth.getMonthNumberString());
+        refreshFilter();
+    }
+
+    private void refreshFilter(){
+        transactionListAdapter.getFilter().filter(filterBySpinner.getSelectedItem().toString());
+    }
+
 }

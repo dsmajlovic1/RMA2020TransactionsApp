@@ -8,4 +8,7 @@ public interface ITransactionListView {
     void setTransactions(ArrayList<Transaction> transactions);
     void notifyTransactionListDataSetChanged();
     ArrayList<Transaction> getTransactions();
+    void updateCurrentTransaction(Transaction transaction);
+    void addTransaction(Transaction transaction);
+    void deleteCurrentTransaction();
 }

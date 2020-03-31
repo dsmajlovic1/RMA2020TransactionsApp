@@ -9,7 +9,11 @@ public interface ITransactionListPresenter {
     void sortByPrice(Boolean ascending);
     void sortByTitle(Boolean ascending);
     void sortByDate(Boolean ascending);
+    void filterByMonth(String month);
     void updateTransaction(Transaction transaction, Transaction newTransaction);
     void deleteTransaction(Transaction transaction);
     void addTransaction(Transaction transaction);
+    Double getTotalIncome();
+    Double getTotalExpenditure();
+    Double getMonthExpenditure(String month);
 }

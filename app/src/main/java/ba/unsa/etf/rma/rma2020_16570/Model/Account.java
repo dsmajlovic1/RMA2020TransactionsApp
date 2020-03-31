@@ -5,6 +5,12 @@ public class Account {
     private Double totalLimit;
     private  Double monthLimit;
 
+    public Account(Double budget, Double totalLimit, Double monthLimit) {
+        this.budget = budget;
+        this.totalLimit = totalLimit;
+        this.monthLimit = monthLimit;
+    }
+
 
     public Double getBudget() {
         return budget;
