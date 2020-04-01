@@ -42,8 +42,8 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     private Spinner sortBySpinner;
     private Button previousMonthButton;
     private Button nextMonthButton;
-    private TextView globalAmountText;
-    private TextView limitText;
+    private TextView globalAmountTextView;
+    private TextView limitTextView;
     private TextView monthYearTextView;
     private ListView transactionListView;
     private Button addButton;
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     private int listPosition = 0;
 
     //Account
-    Account currentUser = new Account(1000.0, 1000.0, 10.0);
+    Account currentUser = new Account(1000.0, 1000.0, 100.0);
 
     //Current month
     Month currentMonth;
@@ -79,11 +79,15 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
         sortBySpinner = (Spinner) findViewById(R.id.sortBySpinner);
         previousMonthButton = (Button) findViewById(R.id.previousMonthButton);
         nextMonthButton = (Button) findViewById(R.id.nextMonthButton);
-        globalAmountText = (TextView) findViewById(R.id.globalAmountText);
-        limitText = (TextView) findViewById(R.id.limitText);
+        globalAmountTextView = (TextView) findViewById(R.id.globalAmountTextView);
+        limitTextView = (TextView) findViewById(R.id.limitTextView);
         monthYearTextView = (TextView) findViewById(R.id.monthYearTextView);
         transactionListView = (ListView) findViewById(R.id.transactionView);
         addButton = (Button) findViewById(R.id.addButton);
+
+        //Set amounts
+        globalAmountTextView.setText(currentUser.getTotalLimit().toString());
+        limitTextView.setText(currentUser.getMonthLimit().toString());
 
         //Initialize sortBySpinner
         sortByAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sortByList);
@@ -112,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
 
         //Set month
         monthYearTextView.setText(currentMonth.toString());
-        transactionListPresenter.filterByMonth(currentMonth.getMonthNumberString());
+        transactionListPresenter.filterByMonth(currentMonth);
 
     }
 
@@ -163,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
                         Transaction changedTransaction = (Transaction)data.getExtras().getParcelable("transaction");
                         updateCurrentTransaction(changedTransaction);
                         if(transactionListPresenter.getTotalExpenditure()> currentUser.getTotalLimit()
-                                || transactionListPresenter.getMonthExpenditure(currentMonth.getMonthNumberString()) > currentUser.getMonthLimit()){
+                                || transactionListPresenter.getMonthExpenditure(currentMonth) > currentUser.getMonthLimit()){
                                     AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                                     alertDialog.setTitle("Limit reached");
                                     alertDialog.setMessage("Are you sure you want to make these changes?");
@@ -194,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
                         //Add the transaction
                         addTransaction(transaction);
                         if(transactionListPresenter.getTotalExpenditure()> currentUser.getTotalLimit()
-                                || transactionListPresenter.getMonthExpenditure(currentMonth.getMonthNumberString()) > currentUser.getMonthLimit()){
+                                || transactionListPresenter.getMonthExpenditure(currentMonth) > currentUser.getMonthLimit()){
                             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                             alertDialog.setTitle("Limit reached");
                             alertDialog.setMessage("Are you sure you want to make these changes?");
@@ -220,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
                         transaction = (Transaction) transactionListView.getItemAtPosition(listPosition);
                         transactionListPresenter.deleteTransaction(transaction);
                     }
-                    transactionListPresenter.refreshTransactions();
+                    refreshCurrentMonthTransactions();
                 }
             }
         }
@@ -291,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
             currentMonth.nextMonth();
 
             monthYearTextView.setText(currentMonth.toString());
-            transactionListPresenter.filterByMonth(currentMonth.getMonthNumberString());
+            transactionListPresenter.filterByMonth(currentMonth);
             refreshCurrentMonthTransactions();
         }
     };
@@ -307,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements ITransactionListV
     };
 
     public void refreshCurrentMonthTransactions(){
-        transactionListPresenter.filterByMonth(currentMonth.getMonthNumberString());
+        transactionListPresenter.filterByMonth(currentMonth);
         refreshFilter();
     }
 

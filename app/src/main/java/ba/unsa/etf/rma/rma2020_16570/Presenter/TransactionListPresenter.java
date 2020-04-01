@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
+import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.Model.TransactionsModel;
 
@@ -63,14 +64,14 @@ public class TransactionListPresenter implements ITransactionListPresenter {
     }
 
     @Override
-    public void filterByMonth(String month) {
+    public void filterByMonth(Month month) {
         ArrayList<Transaction> originalData = new ArrayList<>(transactionListInteractor.get());
         ArrayList<Transaction> filtered = new ArrayList<Transaction>();
         for(int i = 0; i < originalData.size(); i++){
             Transaction transaction = originalData.get(i);
             Calendar cal = Calendar.getInstance();
             cal.setTime(transaction.getDate());
-            if(String.valueOf(cal.get(Calendar.MONTH)+1).equals(month)){
+            if(String.valueOf(cal.get(Calendar.MONTH)+1).equals(month.getMonthNumberString()) && (String.valueOf(cal.get(Calendar.YEAR)).equals(month.getYearNumberString()))){
                 filtered.add(transaction);
             }
         }
@@ -104,7 +105,7 @@ public class TransactionListPresenter implements ITransactionListPresenter {
     }
 
     @Override
-    public Double getMonthExpenditure(String month) {
+    public Double getMonthExpenditure(Month month) {
         return transactionListInteractor.getMonthExpenditure(month);
     }
 }

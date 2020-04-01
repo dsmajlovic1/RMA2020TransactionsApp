@@ -58,6 +58,15 @@ public class TypeSpinnerAdapter extends ArrayAdapter<Transaction.Type> {
         else if(type == Transaction.Type.REGULARPAYMENT){
             transactionIconImageView.setImageResource(R.drawable.regularpayment);
         }
+        else if(type == Transaction.Type.INDIVIDUALINCOME){
+            transactionIconImageView.setImageResource(R.drawable.individualincome);
+        }
+        else if(type == Transaction.Type.INDIVIDUALPAYMENT){
+            transactionIconImageView.setImageResource(R.drawable.individualpayment);
+        }
+        else if(type == Transaction.Type.PURCHASE){
+            transactionIconImageView.setImageResource(R.drawable.purchase);
+        }
         else {
             transactionIconImageView.setImageResource(R.drawable.transaction);
         }

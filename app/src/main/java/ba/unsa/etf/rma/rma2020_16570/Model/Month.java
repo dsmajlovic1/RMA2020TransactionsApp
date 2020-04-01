@@ -28,6 +28,11 @@ public class Month {
         cal.setTime(date);
         return String.valueOf(cal.get(Calendar.MONTH)+1);
     }
+    public String getYearNumberString(){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return String.valueOf(cal.get(Calendar.YEAR));
+    }
     public void nextMonth(){
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);

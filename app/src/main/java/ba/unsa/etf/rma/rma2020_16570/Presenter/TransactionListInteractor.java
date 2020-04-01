@@ -5,6 +5,7 @@ import android.provider.CalendarContract;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.Model.TransactionsModel;
 
@@ -55,12 +56,12 @@ public class TransactionListInteractor implements ITransactionListInteractor {
     }
 
     @Override
-    public Double getMonthExpenditure(String month) {
+    public Double getMonthExpenditure(Month month) {
         Double sum = 0.0;
         Calendar cal = Calendar.getInstance();
         for(int i = 0; i < TransactionsModel.transactions.size(); i++){
             cal.setTime(TransactionsModel.transactions.get(i).getDate());
-            if(String.valueOf(cal.get(Calendar.MONTH)+1).equals(month)){
+            if(String.valueOf(cal.get(Calendar.MONTH)+1).equals(month.getMonthNumberString()) && String.valueOf(cal.get(Calendar.YEAR)).equals(month.getYearNumberString())){
                 if(!(TransactionsModel.transactions.get(i).getType() == Transaction.Type.REGULARINCOME) && !(TransactionsModel.transactions.get(i).getType() == Transaction.Type.INDIVIDUALINCOME)){
                     sum += TransactionsModel.transactions.get(i).getAmount();
                 }

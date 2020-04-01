@@ -101,6 +101,15 @@ public class TransactionListAdapter extends ArrayAdapter<Transaction> implements
         else if(transaction.getType()== Transaction.Type.REGULARPAYMENT){
             transactionIconImageView.setImageResource(R.drawable.regularpayment);
         }
+        else if(transaction.getType()== Transaction.Type.INDIVIDUALINCOME){
+            transactionIconImageView.setImageResource(R.drawable.individualincome);
+        }
+        else if(transaction.getType()== Transaction.Type.INDIVIDUALPAYMENT){
+            transactionIconImageView.setImageResource(R.drawable.individualpayment);
+        }
+        else if(transaction.getType()== Transaction.Type.PURCHASE){
+            transactionIconImageView.setImageResource(R.drawable.purchase);
+        }
         else {
             transactionIconImageView.setImageResource(R.drawable.transaction);
         }
