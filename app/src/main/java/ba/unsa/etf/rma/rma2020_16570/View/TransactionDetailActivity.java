@@ -18,9 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import ba.unsa.etf.rma.rma2020_16570.Adapter.TypeSpinnerAdapter;
+import ba.unsa.etf.rma.rma2020_16570.List.TransactionListFragment;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
-import ba.unsa.etf.rma.rma2020_16570.Presenter.TransactionListInteractor;
-import ba.unsa.etf.rma.rma2020_16570.Presenter.TransactionListPresenter;
+import ba.unsa.etf.rma.rma2020_16570.List.TransactionListInteractor;
 import ba.unsa.etf.rma.rma2020_16570.R;
 
 public class TransactionDetailActivity extends AppCompatActivity {
@@ -69,7 +69,7 @@ public class TransactionDetailActivity extends AppCompatActivity {
 
 
         //Spinner
-        typeSpinnerAdapter = new TypeSpinnerAdapter(this, R.layout.filter_spinner_item, MainActivity.filterTypes);
+        typeSpinnerAdapter = new TypeSpinnerAdapter(this, R.layout.filter_spinner_item, TransactionListFragment.filterTypes);
         typeSpinnerAdapter.setDropDownViewResource(R.layout.filter_spinner_item);
         typeSpinner.setAdapter(typeSpinnerAdapter);
         typeSpinnerAdapter.notifyDataSetChanged();
@@ -89,7 +89,7 @@ public class TransactionDetailActivity extends AppCompatActivity {
             if(transaction.getItemDescription() != null) itemDescriptionEditText.setText(transaction.getItemDescription());
             if(transaction.getTransactionInterval()!= null) transactionIntervalEditText.setText(transaction.getTransactionInterval().toString());
             if(transaction.getEndDate()!= null) endDateEditText.setText(simpleDateFormat.format(transaction.getEndDate()));
-            typeSpinner.setSelection(MainActivity.filterTypes.indexOf(transaction.getType()));
+            typeSpinner.setSelection(TransactionListFragment.filterTypes.indexOf(transaction.getType()));
 
             //Add textChangedListeners
             dateEditText.addTextChangedListener(new TextChangedWatcher(this, dateEditText));
