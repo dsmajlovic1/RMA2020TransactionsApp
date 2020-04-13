@@ -56,22 +56,22 @@ public class ScreenSlidePagerAdapter extends FragmentStateAdapter {
         arrayList.add(fragment);
     }
 
-    public void prepareChange(String type){
+    public void prepareChange(String type, TransactionDetailFragment detailFragment){
         Log.e("Position 4", String.valueOf(arrayList.size()));
         if(arrayList.size()==NUM_PAGES+1){
             arrayList.remove(NUM_PAGES);
         }
         Bundle arguments = new Bundle();
         if(type.equals("edit")){
-            Transaction transaction = ((TransactionListFragment)arrayList.get(0)).getSelectedTransaction();
+            Transaction transaction = ((TransactionListFragment)arrayList.get(1)).getSelectedTransaction();
             arguments.putString("type", "edit");
             arguments.putParcelable("transaction", transaction);
         }
         else {
             arguments.putString("type", "add");
         }
-        TransactionDetailFragment detailFragment = new TransactionDetailFragment();
-        detailFragment.setArguments(arguments);
+        //TransactionDetailFragment detailFragment = new TransactionDetailFragment();
+        //detailFragment.setArguments(arguments);
         arrayList.add(detailFragment);
         //this.notifyDataSetChanged();
     }
@@ -98,6 +98,9 @@ public class ScreenSlidePagerAdapter extends FragmentStateAdapter {
     @Override
     public long getItemId (int position){
         Log.e("getItemId:", String.valueOf(position));
+        Log.e("Array", arrayList.get(0).getClass().toString());
+        Log.e("Array", arrayList.get(1).getClass().toString());
+        Log.e("Array", arrayList.get(2).getClass().toString());
         if(arrayList.get(position).getClass().equals(GraphsFragment.class)) return 0;
         else if(arrayList.get(position).getClass().equals(TransactionListFragment.class)) return 1;
         else if(arrayList.get(position).getClass().equals(BudgetFragment.class)) return 2;

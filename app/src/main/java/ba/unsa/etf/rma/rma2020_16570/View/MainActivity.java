@@ -29,7 +29,8 @@ import ba.unsa.etf.rma.rma2020_16570.R;
 
 public class MainActivity extends FragmentActivity implements TransactionListFragment.OnItemClick,
                                                                 TransactionListFragment.TwoPaneMode,
-                                                                IFragmentCommunication {
+                                                                IFragmentCommunication,
+                                                                IAccount{
     /*
     public static List<String> sortByList = Arrays.asList("Price - Ascending", "Price - Descending","Title - Ascending",
                                                     "Title - Descending", "Date - Ascending", "Date - Descending");
@@ -132,9 +133,14 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         transactionListPresenter.filterByMonth(currentMonth);
 
  */
+
         graphsFragment = new GraphsFragment();
         transactionListFragment = new TransactionListFragment();
         budgetFragment = new BudgetFragment();
+
+        Bundle accountBundle = new Bundle();
+        accountBundle.putParcelable("account",transactionListFragment.getCurrentUser());
+        budgetFragment.setArguments(accountBundle);
 
         arrayList = new ArrayList<Fragment>();
         arrayList.add(graphsFragment);
@@ -250,13 +256,23 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
     @Override
     public void onBackPressed() {
-        if (viewPager.getCurrentItem() == 0) {
+        Log.v(String.valueOf(viewPager.getCurrentItem()), "onBackPressed");
+        if (viewPager.getCurrentItem() == 1 ) {
+            if(pagerAdapter.getChange()){
+                Log.v("IF", "onBackPressed");
+                pagerAdapter.setChange(false);
+
+                transactionListFragment = new TransactionListFragment();
+                arrayList.set(0,graphsFragment);
+                arrayList.set(1, transactionListFragment);
+                arrayList.set(2, budgetFragment);
+                pagerAdapter.setArrayList(arrayList);
+                pagerAdapter.notifyItemRemoved(3);
+                viewPager.setCurrentItem(1,false);
+            }
+
             // If the user is currently looking at the first step, allow the system to handle the
             // Back button. This calls finish() on this activity and pops the back stack.
-            super.onBackPressed();
-        } else {
-            // Otherwise, select the previous step.
-            viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
         }
     }
 
@@ -273,11 +289,17 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                     .commit();
         }
         else{
-            getSupportFragmentManager().beginTransaction()
+            /*getSupportFragmentManager().beginTransaction()
                     .replace(R.id.transactions_list,pagerAdapter.createFragment(3))
                     .addToBackStack(null)
                     .commit();
-            //pagerAdapter.createFragment(3)
+            //pagerAdapter.createFragment(3)*/
+            pagerAdapter.setChange(true);
+            pagerAdapter.prepareChange("edit", detailFragment);
+            pagerAdapter.createFragment(3);
+
+            pagerAdapter.notifyItemChanged(1);
+            viewPager.setCurrentItem(3);
         }
     }
 
@@ -301,7 +323,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         }
         else{
             pagerAdapter.setChange(true);
-            pagerAdapter.prepareChange("add");
+            pagerAdapter.prepareChange("add", detailFragment);
             pagerAdapter.createFragment(0);
 
             pagerAdapter.notifyItemChanged(0);
@@ -312,9 +334,17 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
     @Override
     public void save(final Transaction transaction) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        final TransactionListFragment listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
-        if(listFragment!= null) listFragment.addTransaction(transaction);
+        final TransactionListFragment listFragment;
+        if(twoPaneMode){
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
+            if(listFragment!= null) listFragment.addTransaction(transaction);
+
+        }
+        else {
+            listFragment = (TransactionListFragment) arrayList.get(1);
+            listFragment.addTransaction(transaction);
+        }
         if(listFragment.getPresenter().getTotalExpenditure()> listFragment.getCurrentUser().getTotalLimit()
                 || listFragment.getPresenter().getMonthExpenditure(listFragment.getCurrentMonth()) > listFragment.getCurrentUser().getMonthLimit()){
             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -323,7 +353,16 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    //Do nothing
+                    if(!twoPaneMode){
+                        pagerAdapter.setChange(false);
+
+                        arrayList.set(0,graphsFragment);
+                        arrayList.set(1, transactionListFragment);
+                        arrayList.set(2, budgetFragment);
+                        pagerAdapter.setArrayList(arrayList);
+                        pagerAdapter.notifyItemRemoved(3);
+                        viewPager.setCurrentItem(1,false);
+                    }
                 }
             });
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
@@ -346,6 +385,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             alertDialog.show();
 
         }
+
     }
 
     @Override
@@ -394,6 +434,38 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         FragmentManager fragmentManager = getSupportFragmentManager();
         TransactionListFragment listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
         if(listFragment!= null) listFragment.deleteCurrentTransaction();
+    }
+
+    @Override
+    public void setBudget(Double budget) {
+        ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).getCurrentUser().setBudget(budget);
+    }
+
+    @Override
+    public void setTotalLimit(Double totalLimit) {
+        ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).getCurrentUser().setTotalLimit(totalLimit);
+
+    }
+
+    @Override
+    public void setMonthLimit(Double monthLimit) {
+        ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).getCurrentUser().setMonthLimit(monthLimit);
+
+    }
+
+    @Override
+    public Double getBudget() {
+        return ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).getCurrentUser().getBudget();
+    }
+
+    @Override
+    public Double getTotalLimit() {
+        return ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).getCurrentUser().getTotalLimit();
+    }
+
+    @Override
+    public Double getMonthLimit() {
+        return ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).getCurrentUser().getMonthLimit();
     }
 }
 

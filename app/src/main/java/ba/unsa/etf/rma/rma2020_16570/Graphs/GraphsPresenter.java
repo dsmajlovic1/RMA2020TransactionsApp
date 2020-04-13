@@ -98,7 +98,7 @@ public class GraphsPresenter implements IGraphsPresenter {
             cal.set(Integer.parseInt(year), i+1, 1);
             cal.set(Calendar.MONTH, i);
             sum += (float)((getTransactionListInteractor().getMonthIncome(new Month(cal.getTime()))-getTransactionListInteractor().getMonthExpenditure(new Month(cal.getTime())))*1.0);
-            entries.add(new BarEntry(i+1, sum));
+            entries.add(new BarEntry(i, sum));
 
 
         }
@@ -121,7 +121,7 @@ public class GraphsPresenter implements IGraphsPresenter {
         ArrayList<BarEntry> entries = new ArrayList<>();
         for(int i = 0; i < 52; i++) {
             Log.e(String.valueOf(cal.get(Calendar.YEAR)), String.valueOf(cal.get(Calendar.WEEK_OF_YEAR)));
-            entries.add(new BarEntry(i, (float)(getTransactionListInteractor().getWeeklyIncome(cal.getTime())*1.0)));
+            entries.add(new BarEntry(i+1, (float)(getTransactionListInteractor().getWeeklyIncome(cal.getTime())*1.0)));
             cal.add(Calendar.WEEK_OF_YEAR, 1);
         }
         BarDataSet ds = new BarDataSet(entries, "Weeks");
@@ -141,7 +141,7 @@ public class GraphsPresenter implements IGraphsPresenter {
         cal.set(Calendar.WEEK_OF_YEAR, 1);
         ArrayList<BarEntry> entries = new ArrayList<>();
         for(int i = 0; i < 52; i++) {
-            entries.add(new BarEntry(i, (float)(getTransactionListInteractor().getWeeklyExpenditure(cal.getTime())*1.0)));
+            entries.add(new BarEntry(i+1, (float)(getTransactionListInteractor().getWeeklyExpenditure(cal.getTime())*1.0)));
             cal.add(Calendar.WEEK_OF_YEAR, 1);
         }
         BarDataSet ds = new BarDataSet(entries, "Weeks");
@@ -163,7 +163,7 @@ public class GraphsPresenter implements IGraphsPresenter {
         ArrayList<BarEntry> entries = new ArrayList<>();
         for(int i = 0; i < 52; i++) {
             sum += (float)((getTransactionListInteractor().getWeeklyIncome(cal.getTime())-getTransactionListInteractor().getWeeklyExpenditure(cal.getTime()))*1.0);
-            entries.add(new BarEntry(i, sum));
+            entries.add(new BarEntry(i+1, sum));
             cal.add(Calendar.WEEK_OF_YEAR, 1);
         }
         BarDataSet ds = new BarDataSet(entries, "Weeks");

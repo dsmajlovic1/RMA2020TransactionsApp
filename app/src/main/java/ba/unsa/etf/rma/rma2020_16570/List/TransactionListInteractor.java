@@ -93,7 +93,7 @@ public class TransactionListInteractor implements ITransactionListInteractor {
                 endCal.setTime(TransactionsModel.transactions.get(i).getEndDate());
                 Calendar monthCal = Calendar.getInstance();
                 monthCal.setTime(month.getDate());
-                //maybe poređenje sa jos jednim cal
+
                 if((cal.get(Calendar.MONTH)+1)<= (monthCal.get(Calendar.MONTH)+1) &&
                         (cal.get(Calendar.YEAR))<= (monthCal.get(Calendar.YEAR)) &&
                         (endCal.get(Calendar.MONTH)+1)>= (monthCal.get(Calendar.MONTH)+1) &&
@@ -110,11 +110,6 @@ public class TransactionListInteractor implements ITransactionListInteractor {
                 }
 
             }
-            /*if(String.valueOf(cal.get(Calendar.MONTH)+1).equals(month.getMonthNumberString()) && String.valueOf(cal.get(Calendar.YEAR)).equals(month.getYearNumberString())){
-                if(!(TransactionsModel.transactions.get(i).getType() == Transaction.Type.REGULARINCOME) && !(TransactionsModel.transactions.get(i).getType() == Transaction.Type.INDIVIDUALINCOME)){
-                    sum += TransactionsModel.transactions.get(i).getAmount();
-                }
-            }*/
         }
         return sum;
     }
