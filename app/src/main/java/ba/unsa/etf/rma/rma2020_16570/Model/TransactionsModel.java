@@ -14,7 +14,7 @@ public class TransactionsModel {
             add(new Transaction("20.03.2020", 35.0, "Purchase March", Transaction.Type.PURCHASE, "Item purchased", null, null));
             add(new Transaction("24.03.2020", 22.0, "Another Purchase March", Transaction.Type.PURCHASE, "Item purchased again", null, null));
             add(new Transaction("26.03.2020", 22.0, "Third Purchase March", Transaction.Type.PURCHASE, "Third time's the charm", null, null));
-            add(new Transaction("17.03.2020", 20.0, "Regular income March", Transaction.Type.REGULARINCOME, null, 30, "25.10.2020"));
+            add(new Transaction("17.03.2020", 50.0, "Regular income March", Transaction.Type.REGULARINCOME, null, 30, "25.10.2021"));
 
             add(new Transaction("22.04.2020", 18.0, "Individual payment April", Transaction.Type.INDIVIDUALPAYMENT, "Something payed", null, null));
             add(new Transaction("28.04.2020", 26.0, "Individual income April", Transaction.Type.INDIVIDUALINCOME, null, null, null));

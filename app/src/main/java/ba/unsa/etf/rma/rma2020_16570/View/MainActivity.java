@@ -3,28 +3,22 @@ package ba.unsa.etf.rma.rma2020_16570.View;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.util.Log;
 import android.widget.FrameLayout;
-import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
 
-import ba.unsa.etf.rma.rma2020_16570.Adapter.TypeSpinnerAdapter;
-import ba.unsa.etf.rma.rma2020_16570.Adapter.TransactionListAdapter;
+import ba.unsa.etf.rma.rma2020_16570.Adapter.ScreenSlidePagerAdapter;
+import ba.unsa.etf.rma.rma2020_16570.Budget.BudgetFragment;
 import ba.unsa.etf.rma.rma2020_16570.Detail.TransactionDetailFragment;
+import ba.unsa.etf.rma.rma2020_16570.Graphs.GraphsFragment;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListFragment;
 import ba.unsa.etf.rma.rma2020_16570.Model.Account;
 import ba.unsa.etf.rma.rma2020_16570.Model.Month;
@@ -33,7 +27,7 @@ import ba.unsa.etf.rma.rma2020_16570.List.ITransactionListView;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListPresenter;
 import ba.unsa.etf.rma.rma2020_16570.R;
 
-public class MainActivity extends AppCompatActivity implements TransactionListFragment.OnItemClick,
+public class MainActivity extends FragmentActivity implements TransactionListFragment.OnItemClick,
                                                                 TransactionListFragment.TwoPaneMode,
                                                                 IFragmentCommunication {
     /*
@@ -72,6 +66,17 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
     Month currentMonth;
      */
     private boolean twoPaneMode;
+
+    private ViewPager2 viewPager;
+
+    private ScreenSlidePagerAdapter pagerAdapter;
+
+    private TransactionListFragment transactionListFragment;
+    private BudgetFragment budgetFragment;
+    private GraphsFragment graphsFragment;
+
+    private ArrayList<Fragment> arrayList;
+    private int currentItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +132,15 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
         transactionListPresenter.filterByMonth(currentMonth);
 
  */
+        graphsFragment = new GraphsFragment();
+        transactionListFragment = new TransactionListFragment();
+        budgetFragment = new BudgetFragment();
+
+        arrayList = new ArrayList<Fragment>();
+        arrayList.add(graphsFragment);
+        arrayList.add(transactionListFragment);
+        arrayList.add(budgetFragment);
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         FrameLayout details = findViewById(R.id.transaction_detail);
         if (details != null) {
@@ -141,17 +155,109 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
         } else {
             twoPaneMode = false;
         }
-        Fragment listFragment =  fragmentManager.findFragmentById(R.id.transactions_list);
-        if (listFragment==null){
-            listFragment = new TransactionListFragment();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.transactions_list,listFragment, "list")
-                    .commit();
+        if(twoPaneMode){
+            Fragment listFragment =  fragmentManager.findFragmentById(R.id.transactions_list);
+            if (listFragment==null){
+                listFragment = arrayList.get(1);
+                fragmentManager.beginTransaction()
+                        .replace(R.id.transactions_list,listFragment, "list")
+                        .commit();
+                /*if(!twoPaneMode){
+                    Log.v("First one", "if if");
+                    viewPager = findViewById(R.id.transactions_list);
+                    pagerAdapter = new ScreenSlidePagerAdapter(this);
+                    pagerAdapter.setArrayList(arrayList);
+                    viewPager.setAdapter(pagerAdapter);
+                    viewPager.registerOnPageChangeCallback(pageChangeCallback);
+                    viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+                    viewPager.setCurrentItem(1,false);
+                }
+                else {
+                    //listFragment = new TransactionListFragment();
+
+                }*/
+
+
+            }
+            else {
+                fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                /*if (twoPaneMode)
+
+                else {
+                    Log.v("This one", "else else");
+                    fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    viewPager = findViewById(R.id.transactions_list);
+                    pagerAdapter = new ScreenSlidePagerAdapter(this);
+                    pagerAdapter.setArrayList(arrayList);
+                    viewPager.setAdapter(pagerAdapter);
+                    viewPager.registerOnPageChangeCallback(pageChangeCallback);
+                    viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+                    viewPager.setCurrentItem(1, false);
+                }*/
+            }
         }
-        else{
-            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        else {
+            viewPager = findViewById(R.id.activityViewPager);
+            pagerAdapter = new ScreenSlidePagerAdapter(this);
+            pagerAdapter.setArrayList(arrayList);
+            viewPager.setAdapter(pagerAdapter);
+            viewPager.registerOnPageChangeCallback(pageChangeCallback);
+            viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+            viewPager.setCurrentItem(1,false);
         }
 
+
+
+    }
+    private ViewPager2.OnPageChangeCallback pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
+        @Override
+        public void onPageSelected(final int position) {
+        }
+        @Override
+        public void onPageScrolled (int position, float positionOffset, int positionOffsetPixels){
+        }
+
+        @Override
+        public void onPageScrollStateChanged(final int state) {
+            super.onPageScrollStateChanged(state);
+            if (state == ViewPager2.SCROLL_STATE_IDLE) {
+                currentItem = viewPager.getCurrentItem();
+                if(arrayList.get(currentItem).getClass().equals(GraphsFragment.class)){
+                    arrayList.set(0, budgetFragment);
+                    arrayList.set(1,graphsFragment);
+                    arrayList.set(2, transactionListFragment);
+                    pagerAdapter.setArrayList(arrayList);
+                }
+                else if(arrayList.get(currentItem).getClass().equals(TransactionListFragment.class) ||
+                        arrayList.get(currentItem).getClass().equals(TransactionDetailFragment.class)){
+                    arrayList.set(0,graphsFragment);
+                    arrayList.set(1, transactionListFragment);
+                    arrayList.set(2, budgetFragment);
+                    pagerAdapter.setArrayList(arrayList);
+
+                }
+                else if(arrayList.get(currentItem).getClass().equals(BudgetFragment.class)){
+                    arrayList.set(0, transactionListFragment);
+                    arrayList.set(1, budgetFragment);
+                    arrayList.set(2,graphsFragment);
+                    pagerAdapter.setArrayList(arrayList);
+                }
+                viewPager.setCurrentItem(1,false);
+                //false da se ne vidi promjena
+            }
+        }
+    };
+
+    @Override
+    public void onBackPressed() {
+        if (viewPager.getCurrentItem() == 0) {
+            // If the user is currently looking at the first step, allow the system to handle the
+            // Back button. This calls finish() on this activity and pops the back stack.
+            super.onBackPressed();
+        } else {
+            // Otherwise, select the previous step.
+            viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
+        }
     }
 
     @Override
@@ -168,16 +274,40 @@ public class MainActivity extends AppCompatActivity implements TransactionListFr
         }
         else{
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.transactions_list,detailFragment)
+                    .replace(R.id.transactions_list,pagerAdapter.createFragment(3))
                     .addToBackStack(null)
                     .commit();
+            //pagerAdapter.createFragment(3)
         }
     }
+
 
 
     @Override
     public Boolean getPaneMode() {
         return twoPaneMode;
+    }
+
+    @Override
+    public void add() {
+        Bundle arguments = new Bundle();
+        arguments.putString("type", "add");
+        TransactionDetailFragment detailFragment = new TransactionDetailFragment();
+        detailFragment.setArguments(arguments);
+        if (twoPaneMode){
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.transaction_detail, detailFragment)
+                    .commit();
+        }
+        else{
+            pagerAdapter.setChange(true);
+            pagerAdapter.prepareChange("add");
+            pagerAdapter.createFragment(0);
+
+            pagerAdapter.notifyItemChanged(0);
+            viewPager.setCurrentItem(3);
+        }
+
     }
 
     @Override

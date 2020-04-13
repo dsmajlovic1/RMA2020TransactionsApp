@@ -25,6 +25,7 @@ import ba.unsa.etf.rma.rma2020_16570.Model.Account;
 import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.R;
+import ba.unsa.etf.rma.rma2020_16570.View.IFragmentCommunication;
 import ba.unsa.etf.rma.rma2020_16570.View.MainActivity;
 import ba.unsa.etf.rma.rma2020_16570.View.TransactionDetailActivity;
 
@@ -82,6 +83,14 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     private TwoPaneMode twoPaneMode;
     public interface TwoPaneMode{
         public Boolean getPaneMode();
+    }
+    private IFragmentCommunication communication;
+
+    public IFragmentCommunication getCommunication(){
+        if(communication == null){
+            communication = (MainActivity)getActivity();
+        }
+        return communication;
     }
 
     @Override
@@ -261,21 +270,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
             intent.putExtras(bundle);
             getActivity().startActivityForResult(intent, 1);
             */
-            Bundle arguments = new Bundle();
-            arguments.putString("type", "add");
-            TransactionDetailFragment detailFragment = new TransactionDetailFragment();
-            detailFragment.setArguments(arguments);
-            if (twoPaneMode.getPaneMode()){
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.transaction_detail, detailFragment)
-                        .commit();
-            }
-            else{
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.transactions_list,detailFragment)
-                        .addToBackStack(null)
-                        .commit();
-            }
+            getCommunication().add();
         }
     };
 
