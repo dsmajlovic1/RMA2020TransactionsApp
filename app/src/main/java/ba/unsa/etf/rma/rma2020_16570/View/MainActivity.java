@@ -143,20 +143,21 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
     @Override
     public void onBackPressed() {
-        Log.v(String.valueOf(viewPager.getCurrentItem()), "onBackPressed");
         if (viewPager.getCurrentItem() == 1 ) {
             if(pagerAdapter.getChange()){
-                Log.v("IF", "onBackPressed");
                 pagerAdapter.setChange(false);
 
-                transactionListFragment = new TransactionListFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .remove(graphsFragment)
+                        .remove(transactionListFragment)
+                        .remove(budgetFragment)
+                        .commit();
                 arrayList.set(0,graphsFragment);
                 arrayList.set(1, transactionListFragment);
                 arrayList.set(2, budgetFragment);
-                ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).notifyTransactionListDataSetChanged();
+
                 pagerAdapter.setArrayList(arrayList);
-                pagerAdapter.notifyItemRemoved(3);
-                pagerAdapter.notifyDataSetChanged();
+                pagerAdapter.notifyItemRemoved(1);
                 viewPager.invalidate();
                 viewPager.setCurrentItem(1,false);
             }
@@ -244,13 +245,17 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                         listFragment.notifyTransactionListDataSetChanged();
                         pagerAdapter.setChange(false);
 
+                        getSupportFragmentManager().beginTransaction()
+                                .remove(graphsFragment)
+                                .remove(transactionListFragment)
+                                .remove(budgetFragment)
+                                .commit();
                         arrayList.set(0,graphsFragment);
                         arrayList.set(1, transactionListFragment);
                         arrayList.set(2, budgetFragment);
+
                         pagerAdapter.setArrayList(arrayList);
-                        pagerAdapter.notifyItemRemoved(3);
-                        pagerAdapter.notifyItemChanged(1);
-                        pagerAdapter.notifyDataSetChanged();
+                        pagerAdapter.notifyItemRemoved(1);
                         viewPager.invalidate();
                         viewPager.setCurrentItem(1,false);
                     }
@@ -279,13 +284,18 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         else {
             listFragment.notifyTransactionListDataSetChanged();
             pagerAdapter.setChange(false);
+
+            getSupportFragmentManager().beginTransaction()
+                    .remove(graphsFragment)
+                    .remove(transactionListFragment)
+                    .remove(budgetFragment)
+                    .commit();
             arrayList.set(0,graphsFragment);
             arrayList.set(1, transactionListFragment);
             arrayList.set(2, budgetFragment);
+
             pagerAdapter.setArrayList(arrayList);
-            pagerAdapter.notifyItemRemoved(3);
-            pagerAdapter.notifyItemChanged(1);
-            pagerAdapter.notifyDataSetChanged();
+            pagerAdapter.notifyItemRemoved(1);
             viewPager.invalidate();
             viewPager.setCurrentItem(1,false);
         }
@@ -320,12 +330,17 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                     listFragment.notifyTransactionListDataSetChanged();
                     pagerAdapter.setChange(false);
 
+                    getSupportFragmentManager().beginTransaction()
+                            .remove(graphsFragment)
+                            .remove(transactionListFragment)
+                            .remove(budgetFragment)
+                            .commit();
                     arrayList.set(0,graphsFragment);
                     arrayList.set(1, transactionListFragment);
                     arrayList.set(2, budgetFragment);
+
                     pagerAdapter.setArrayList(arrayList);
-                    pagerAdapter.notifyItemRemoved(3);
-                    pagerAdapter.notifyDataSetChanged();
+                    pagerAdapter.notifyItemRemoved(1);
                     viewPager.invalidate();
                     viewPager.setCurrentItem(1,false);
                 }
@@ -353,12 +368,17 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             listFragment.notifyTransactionListDataSetChanged();
             pagerAdapter.setChange(false);
 
+            getSupportFragmentManager().beginTransaction()
+                    .remove(graphsFragment)
+                    .remove(transactionListFragment)
+                    .remove(budgetFragment)
+                    .commit();
             arrayList.set(0,graphsFragment);
             arrayList.set(1, transactionListFragment);
             arrayList.set(2, budgetFragment);
+
             pagerAdapter.setArrayList(arrayList);
-            pagerAdapter.notifyItemRemoved(3);
-            pagerAdapter.notifyDataSetChanged();
+            pagerAdapter.notifyItemRemoved(1);
             viewPager.invalidate();
             viewPager.setCurrentItem(1,false);
         }
