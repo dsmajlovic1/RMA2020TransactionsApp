@@ -1,8 +1,6 @@
 package ba.unsa.etf.rma.rma2020_16570.Adapter;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.view.animation.TranslateAnimation;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;

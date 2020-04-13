@@ -1,6 +1,5 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;

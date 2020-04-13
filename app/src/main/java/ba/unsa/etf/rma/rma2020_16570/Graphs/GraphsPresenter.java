@@ -1,7 +1,5 @@
 package ba.unsa.etf.rma.rma2020_16570.Graphs;
 
-import android.util.Log;
-
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -69,7 +67,6 @@ public class GraphsPresenter implements IGraphsPresenter {
 
         ArrayList<BarEntry> entries = new ArrayList<>();
         for(int i = 0; i < 12; i++) {
-            Log.e(year, year.toString());
             cal.set(Integer.parseInt(year), i+1, 1);
             cal.set(Calendar.MONTH, i);
 

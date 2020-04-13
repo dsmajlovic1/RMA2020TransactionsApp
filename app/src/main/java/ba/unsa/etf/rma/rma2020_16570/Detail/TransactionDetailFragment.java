@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -148,7 +147,7 @@ public class TransactionDetailFragment extends Fragment {
 
             Date date, endDate;
             try {
-                date = simpleDateFormat.parse(dateEditText.getText().toString());
+                date = simpleDateFormat.parse(dateEditText.getText().toString().trim());
             } catch (ParseException e) {
                 date = null;
             }
@@ -158,16 +157,17 @@ public class TransactionDetailFragment extends Fragment {
             transaction.setType(Transaction.Type.valueOf(typeSpinner.getSelectedItem().toString()));
 
             if(transaction.getType() == Transaction.Type.INDIVIDUALINCOME || transaction.getType() == Transaction.Type.REGULARINCOME) transaction.setItemDescription(null);
-            else transaction.setItemDescription(itemDescriptionEditText.getText().toString());
+            else transaction.setItemDescription(itemDescriptionEditText.getText().toString().trim());
 
             if(transaction.getType() == Transaction.Type.INDIVIDUALINCOME || transaction.getType() == Transaction.Type.INDIVIDUALPAYMENT || transaction.getType() == Transaction.Type.PURCHASE){
                 transaction.setTransactionInterval(null);
                 transaction.setEndDate(null);
             }
             else{
-                transaction.setTransactionInterval(Integer.getInteger(transactionIntervalEditText.getText().toString()));
+                int interval = new Integer(transactionIntervalEditText.getText().toString().trim());
+                transaction.setTransactionInterval((interval));
                 try {
-                    endDate = simpleDateFormat.parse(endDateEditText.getText().toString());
+                    endDate = simpleDateFormat.parse(endDateEditText.getText().toString().trim());
                 } catch (ParseException e) {
                     endDate = null;
                 }

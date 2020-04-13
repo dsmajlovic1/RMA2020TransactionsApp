@@ -1,8 +1,6 @@
 package ba.unsa.etf.rma.rma2020_16570.Graphs;
 
-import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -217,7 +215,6 @@ public class GraphsFragment extends Fragment implements IUnitFilter {
     private AdapterView.OnItemSelectedListener unitSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            Log.e(unitSpinner.getSelectedItem().toString(), yearSpinner.getSelectedItem().toString());
             if(unitSpinner.getSelectedItem().toString().equals("Month")) showByMonth(yearSpinner.getSelectedItem().toString());
             else if(unitSpinner.getSelectedItem().toString().equals("Week")) showByWeek(yearSpinner.getSelectedItem().toString());
             else if(unitSpinner.getSelectedItem().toString().equals("Day")) showByDay(yearSpinner.getSelectedItem().toString());
