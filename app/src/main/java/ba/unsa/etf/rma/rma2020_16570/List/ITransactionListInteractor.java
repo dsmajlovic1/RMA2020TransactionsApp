@@ -19,6 +19,6 @@ public interface ITransactionListInteractor {
     Double getMonthIncome(Month month);
     Double getWeeklyIncome(Date week);
     Double getWeeklyExpenditure(Date week);
-    Double getDailyIncome(Date week);
-    Double getDailyExpenditure(Date week);
+    Double getDailyIncome(Date day);
+    Double getDailyExpenditure(Date day);
 }

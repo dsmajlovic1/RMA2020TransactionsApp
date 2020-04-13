@@ -74,6 +74,4 @@ public class BudgetFragment extends Fragment {
             accountInfo.setMonthLimit(Double.valueOf(monthLimitEditText.getText().toString()));
         }
     };
-
-    //onDestroyView spasavanje promjena
 }

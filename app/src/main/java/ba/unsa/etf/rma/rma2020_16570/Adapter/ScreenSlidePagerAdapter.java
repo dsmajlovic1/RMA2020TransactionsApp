@@ -39,8 +39,6 @@ public class ScreenSlidePagerAdapter extends FragmentStateAdapter {
     public Boolean getChange() { return change;}
     public void setChange(Boolean change) { this.change = change;}
 
-    //private TransactionListFragment transactionListFragment;
-
 
     public ScreenSlidePagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
         super(fragmentManager, lifecycle);
@@ -57,7 +55,6 @@ public class ScreenSlidePagerAdapter extends FragmentStateAdapter {
     }
 
     public void prepareChange(String type, TransactionDetailFragment detailFragment){
-        Log.e("Position 4", String.valueOf(arrayList.size()));
         if(arrayList.size()==NUM_PAGES+1){
             arrayList.remove(NUM_PAGES);
         }
@@ -70,18 +67,14 @@ public class ScreenSlidePagerAdapter extends FragmentStateAdapter {
         else {
             arguments.putString("type", "add");
         }
-        //TransactionDetailFragment detailFragment = new TransactionDetailFragment();
-        //detailFragment.setArguments(arguments);
+
         arrayList.add(detailFragment);
-        //this.notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        Log.e("Create", String.valueOf(position));
         if(change || position == 3){
-            Log.v("Recreate", String.valueOf(position));
             createdFragments.add(arrayList.get(3).getClass().getName());
             return arrayList.get(3);
         }
@@ -97,10 +90,6 @@ public class ScreenSlidePagerAdapter extends FragmentStateAdapter {
     }
     @Override
     public long getItemId (int position){
-        Log.e("getItemId:", String.valueOf(position));
-        Log.e("Array", arrayList.get(0).getClass().toString());
-        Log.e("Array", arrayList.get(1).getClass().toString());
-        Log.e("Array", arrayList.get(2).getClass().toString());
         if(arrayList.get(position).getClass().equals(GraphsFragment.class)) return 0;
         else if(arrayList.get(position).getClass().equals(TransactionListFragment.class)) return 1;
         else if(arrayList.get(position).getClass().equals(BudgetFragment.class)) return 2;
@@ -109,7 +98,6 @@ public class ScreenSlidePagerAdapter extends FragmentStateAdapter {
     }
     @Override
     public boolean containsItem (long itemId){
-        Log.e("containsItem:", String.valueOf(itemId));
         return createdFragments.contains(arrayList.get((int) itemId).getClass().getName());
     }
 }

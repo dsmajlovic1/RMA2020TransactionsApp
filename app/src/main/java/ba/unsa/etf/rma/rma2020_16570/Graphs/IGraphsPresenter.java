@@ -13,4 +13,7 @@ public interface IGraphsPresenter {
     BarData getIncomeByWeek(String year);
     BarData getExpenditureByWeek(String year);
     BarData getAllByWeek(String year);
+    BarData getIncomeByDay(String year);
+    BarData getExpenditureByDay(String year);
+    BarData getAllByDay(String year);
 }

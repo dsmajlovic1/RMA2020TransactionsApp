@@ -120,7 +120,6 @@ public class GraphsPresenter implements IGraphsPresenter {
         cal.set(Calendar.WEEK_OF_YEAR, 1);
         ArrayList<BarEntry> entries = new ArrayList<>();
         for(int i = 0; i < 52; i++) {
-            Log.e(String.valueOf(cal.get(Calendar.YEAR)), String.valueOf(cal.get(Calendar.WEEK_OF_YEAR)));
             entries.add(new BarEntry(i+1, (float)(getTransactionListInteractor().getWeeklyIncome(cal.getTime())*1.0)));
             cal.add(Calendar.WEEK_OF_YEAR, 1);
         }
@@ -167,6 +166,68 @@ public class GraphsPresenter implements IGraphsPresenter {
             cal.add(Calendar.WEEK_OF_YEAR, 1);
         }
         BarDataSet ds = new BarDataSet(entries, "Weeks");
+        ds.setColors(ColorTemplate.VORDIPLOM_COLORS);
+        sets.add(ds);
+
+        BarData d = new BarData(sets);
+        return d;
+    }
+
+    @Override
+    public BarData getIncomeByDay(String year) {
+        Calendar cal = Calendar.getInstance();
+
+        ArrayList<IBarDataSet> sets = new ArrayList<>();
+        cal.set(Integer.parseInt(year), 1, 1);
+        cal.set(Calendar.DATE, 1);
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        for(int i = 0; i < 365; i++) {
+            entries.add(new BarEntry(i+1, (float)(getTransactionListInteractor().getDailyIncome(cal.getTime())*1.0)));
+            cal.add(Calendar.DATE, 1);
+        }
+        BarDataSet ds = new BarDataSet(entries, "Days");
+        ds.setColors(ColorTemplate.VORDIPLOM_COLORS);
+        sets.add(ds);
+
+        BarData d = new BarData(sets);
+        return d;
+    }
+
+    @Override
+    public BarData getExpenditureByDay(String year) {
+        Calendar cal = Calendar.getInstance();
+
+        ArrayList<IBarDataSet> sets = new ArrayList<>();
+        cal.set(Integer.parseInt(year), 1, 1);
+        cal.set(Calendar.DATE, 1);
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        for(int i = 0; i < 365; i++) {
+            entries.add(new BarEntry(i+1, (float)(getTransactionListInteractor().getDailyExpenditure(cal.getTime())*1.0)));
+            cal.add(Calendar.DATE, 1);
+        }
+        BarDataSet ds = new BarDataSet(entries, "Days");
+        ds.setColors(ColorTemplate.VORDIPLOM_COLORS);
+        sets.add(ds);
+
+        BarData d = new BarData(sets);
+        return d;
+    }
+
+    @Override
+    public BarData getAllByDay(String year) {
+        Calendar cal = Calendar.getInstance();
+        float sum = 0f;
+
+        ArrayList<IBarDataSet> sets = new ArrayList<>();
+        cal.set(Integer.parseInt(year), 1, 1);
+        cal.set(Calendar.DATE, 1);
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        for(int i = 0; i < 365; i++) {
+            sum += (float)((getTransactionListInteractor().getDailyIncome(cal.getTime())-getTransactionListInteractor().getDailyExpenditure(cal.getTime()))*1.0);
+            entries.add(new BarEntry(i+1, sum));
+            cal.add(Calendar.DATE, 1);
+        }
+        BarDataSet ds = new BarDataSet(entries, "Days");
         ds.setColors(ColorTemplate.VORDIPLOM_COLORS);
         sets.add(ds);
 

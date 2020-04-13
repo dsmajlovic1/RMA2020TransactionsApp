@@ -31,41 +31,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                                                                 TransactionListFragment.TwoPaneMode,
                                                                 IFragmentCommunication,
                                                                 IAccount{
-    /*
-    public static List<String> sortByList = Arrays.asList("Price - Ascending", "Price - Descending","Title - Ascending",
-                                                    "Title - Descending", "Date - Ascending", "Date - Descending");
-    public static List<Transaction.Type> filterTypes =
-            Arrays.asList(Transaction.Type.INDIVIDUALINCOME, Transaction.Type.INDIVIDUALPAYMENT,
-            Transaction.Type.PURCHASE, Transaction.Type.REGULARINCOME, Transaction.Type.REGULARPAYMENT);
 
-    //Views
-    private Spinner filterBySpinner;
-    private Spinner sortBySpinner;
-    private Button previousMonthButton;
-    private Button nextMonthButton;
-    private TextView globalAmountTextView;
-    private TextView limitTextView;
-    private TextView monthYearTextView;
-    private ListView transactionListView;
-    private Button addButton;
-
-    //Adapters
-    private ArrayAdapter<String> sortByAdapter;
-    private TypeSpinnerAdapter filterByAdapter;
-    private TransactionListAdapter transactionListAdapter;
-
-    //Presenters
-    private TransactionListPresenter transactionListPresenter;
-
-    //TransactionList position
-    private int listPosition = 0;
-
-    //Account
-    Account currentUser = new Account(1000.0, 1000.0, 100.0);
-
-    //Current month
-    Month currentMonth;
-     */
     private boolean twoPaneMode;
 
     private ViewPager2 viewPager;
@@ -83,56 +49,6 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-/*
-        transactionListPresenter = new TransactionListPresenter(this, this);
-
-        currentMonth = new Month(Calendar.getInstance().getTime());
-
-        //Get view resources
-        filterBySpinner = (Spinner) findViewById(R.id.filterBySpinner);
-        sortBySpinner = (Spinner) findViewById(R.id.sortBySpinner);
-        previousMonthButton = (Button) findViewById(R.id.previousMonthButton);
-        nextMonthButton = (Button) findViewById(R.id.nextMonthButton);
-        globalAmountTextView = (TextView) findViewById(R.id.globalAmountTextView);
-        limitTextView = (TextView) findViewById(R.id.limitTextView);
-        monthYearTextView = (TextView) findViewById(R.id.monthYearTextView);
-        transactionListView = (ListView) findViewById(R.id.transactionView);
-        addButton = (Button) findViewById(R.id.addButton);
-
-        //Set amounts
-        globalAmountTextView.setText(currentUser.getTotalLimit().toString());
-        limitTextView.setText(currentUser.getMonthLimit().toString());
-
-        //Initialize sortBySpinner
-        sortByAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sortByList);
-        sortByAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sortBySpinner.setAdapter(sortByAdapter);
-        sortBySpinner.setOnItemSelectedListener(sortByOnItemSelectedListener);
-        sortByAdapter.notifyDataSetChanged();
-
-        //Initialize filterBySpinner
-        filterByAdapter = new TypeSpinnerAdapter(this, R.layout.filter_spinner_item, filterTypes);
-        filterByAdapter.setDropDownViewResource(R.layout.filter_spinner_item);
-        filterBySpinner.setAdapter(filterByAdapter);
-        filterBySpinner.setOnItemSelectedListener(filterByOnItemSelectedListener);
-        filterByAdapter.notifyDataSetChanged();
-
-        //Initialize transactionListView
-        transactionListAdapter = new TransactionListAdapter(this, R.layout.transaction_list_item,new ArrayList<Transaction>());
-        transactionListView.setAdapter(transactionListAdapter);
-        transactionListView.setOnItemClickListener(onTransactionListItemClickListener);
-        transactionListPresenter.refreshTransactions();
-
-        //Set onClickListeners
-        previousMonthButton.setOnClickListener(previousButtonOnClickListener);
-        nextMonthButton.setOnClickListener(nextButtonOnClickListener);
-        addButton.setOnClickListener(addButtonOnClickListener);
-
-        //Set month
-        monthYearTextView.setText(currentMonth.toString());
-        transactionListPresenter.filterByMonth(currentMonth);
-
- */
 
         graphsFragment = new GraphsFragment();
         transactionListFragment = new TransactionListFragment();
@@ -168,38 +84,9 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                 fragmentManager.beginTransaction()
                         .replace(R.id.transactions_list,listFragment, "list")
                         .commit();
-                /*if(!twoPaneMode){
-                    Log.v("First one", "if if");
-                    viewPager = findViewById(R.id.transactions_list);
-                    pagerAdapter = new ScreenSlidePagerAdapter(this);
-                    pagerAdapter.setArrayList(arrayList);
-                    viewPager.setAdapter(pagerAdapter);
-                    viewPager.registerOnPageChangeCallback(pageChangeCallback);
-                    viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-                    viewPager.setCurrentItem(1,false);
-                }
-                else {
-                    //listFragment = new TransactionListFragment();
-
-                }*/
-
-
             }
             else {
                 fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                /*if (twoPaneMode)
-
-                else {
-                    Log.v("This one", "else else");
-                    fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    viewPager = findViewById(R.id.transactions_list);
-                    pagerAdapter = new ScreenSlidePagerAdapter(this);
-                    pagerAdapter.setArrayList(arrayList);
-                    viewPager.setAdapter(pagerAdapter);
-                    viewPager.registerOnPageChangeCallback(pageChangeCallback);
-                    viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-                    viewPager.setCurrentItem(1, false);
-                }*/
             }
         }
         else {
@@ -266,13 +153,13 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                 arrayList.set(0,graphsFragment);
                 arrayList.set(1, transactionListFragment);
                 arrayList.set(2, budgetFragment);
+                ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).notifyTransactionListDataSetChanged();
                 pagerAdapter.setArrayList(arrayList);
                 pagerAdapter.notifyItemRemoved(3);
+                pagerAdapter.notifyDataSetChanged();
+                viewPager.invalidate();
                 viewPager.setCurrentItem(1,false);
             }
-
-            // If the user is currently looking at the first step, allow the system to handle the
-            // Back button. This calls finish() on this activity and pops the back stack.
         }
     }
 
@@ -342,7 +229,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
         }
         else {
-            listFragment = (TransactionListFragment) arrayList.get(1);
+            listFragment = (TransactionListFragment) arrayList.get(arrayList.indexOf(transactionListFragment));
             listFragment.addTransaction(transaction);
         }
         if(listFragment.getPresenter().getTotalExpenditure()> listFragment.getCurrentUser().getTotalLimit()
@@ -354,6 +241,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     if(!twoPaneMode){
+                        listFragment.notifyTransactionListDataSetChanged();
                         pagerAdapter.setChange(false);
 
                         arrayList.set(0,graphsFragment);
@@ -361,6 +249,9 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                         arrayList.set(2, budgetFragment);
                         pagerAdapter.setArrayList(arrayList);
                         pagerAdapter.notifyItemRemoved(3);
+                        pagerAdapter.notifyItemChanged(1);
+                        pagerAdapter.notifyDataSetChanged();
+                        viewPager.invalidate();
                         viewPager.setCurrentItem(1,false);
                     }
                 }
@@ -385,55 +276,115 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             alertDialog.show();
 
         }
+        else {
+            listFragment.notifyTransactionListDataSetChanged();
+            pagerAdapter.setChange(false);
+            arrayList.set(0,graphsFragment);
+            arrayList.set(1, transactionListFragment);
+            arrayList.set(2, budgetFragment);
+            pagerAdapter.setArrayList(arrayList);
+            pagerAdapter.notifyItemRemoved(3);
+            pagerAdapter.notifyItemChanged(1);
+            pagerAdapter.notifyDataSetChanged();
+            viewPager.invalidate();
+            viewPager.setCurrentItem(1,false);
+        }
 
     }
 
     @Override
     public void edit(Transaction changed) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        TransactionListFragment listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
-        if(listFragment!= null){
-            final Transaction oldTransaction = listFragment.getSelectedTransaction();
-            listFragment.updateCurrentTransaction(changed);
-            if(listFragment.getPresenter().getTotalExpenditure()> listFragment.getCurrentUser().getTotalLimit()
-                    || listFragment.getPresenter().getMonthExpenditure(listFragment.getCurrentMonth()) > listFragment.getCurrentUser().getMonthLimit()) {
-                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                alertDialog.setTitle("Limit reached");
-                alertDialog.setMessage("Are you sure you want to make these changes?");
-                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Do nothing
-                    }
-                });
-                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (twoPaneMode == false) {
-                            TransactionDetailFragment detailFragment = new TransactionDetailFragment();
-                            Bundle bundle = new Bundle();
-                            bundle.putString("type", "edit");
-                            bundle.putParcelable("transaction", oldTransaction);
-                            detailFragment.setArguments(bundle);
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.transactions_list, detailFragment)
-                                    .addToBackStack(null)
-                                    .commit();
-                        }
-
-                    }
-                });
-                alertDialog.show();
+        final TransactionListFragment listFragment;
+        final Transaction oldTransaction;
+        if(twoPaneMode){
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
+            if(listFragment!= null){
+                listFragment.updateCurrentTransaction(changed);
             }
+        }
+        else {
+            listFragment = (TransactionListFragment) arrayList.get(arrayList.indexOf(transactionListFragment));
+            listFragment.updateCurrentTransaction(changed);
+        }
+        oldTransaction = listFragment.getSelectedTransaction();
 
+        if(listFragment.getPresenter().getTotalExpenditure()> listFragment.getCurrentUser().getTotalLimit()
+                || listFragment.getPresenter().getMonthExpenditure(listFragment.getCurrentMonth()) > listFragment.getCurrentUser().getMonthLimit()) {
+            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+            alertDialog.setTitle("Limit reached");
+            alertDialog.setMessage("Are you sure you want to make these changes?");
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    listFragment.notifyTransactionListDataSetChanged();
+                    pagerAdapter.setChange(false);
+
+                    arrayList.set(0,graphsFragment);
+                    arrayList.set(1, transactionListFragment);
+                    arrayList.set(2, budgetFragment);
+                    pagerAdapter.setArrayList(arrayList);
+                    pagerAdapter.notifyItemRemoved(3);
+                    pagerAdapter.notifyDataSetChanged();
+                    viewPager.invalidate();
+                    viewPager.setCurrentItem(1,false);
+                }
+            });
+            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (!twoPaneMode) {
+                        TransactionDetailFragment detailFragment = new TransactionDetailFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("type", "edit");
+                        bundle.putParcelable("transaction", oldTransaction);
+                        detailFragment.setArguments(bundle);
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.transactions_list, detailFragment)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+
+                }
+            });
+            alertDialog.show();
+        }
+        else {
+            listFragment.notifyTransactionListDataSetChanged();
+            pagerAdapter.setChange(false);
+
+            arrayList.set(0,graphsFragment);
+            arrayList.set(1, transactionListFragment);
+            arrayList.set(2, budgetFragment);
+            pagerAdapter.setArrayList(arrayList);
+            pagerAdapter.notifyItemRemoved(3);
+            pagerAdapter.notifyDataSetChanged();
+            viewPager.invalidate();
+            viewPager.setCurrentItem(1,false);
         }
     }
 
     @Override
     public void delete() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        TransactionListFragment listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
-        if(listFragment!= null) listFragment.deleteCurrentTransaction();
+        if(twoPaneMode){
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            TransactionListFragment listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
+            if(listFragment!= null) listFragment.deleteCurrentTransaction();
+        }
+        else{
+            ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).deleteCurrentTransaction();
+            ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).notifyTransactionListDataSetChanged();
+            pagerAdapter.setChange(false);
+
+            arrayList.set(0,graphsFragment);
+            arrayList.set(1, transactionListFragment);
+            arrayList.set(2, budgetFragment);
+            pagerAdapter.setArrayList(arrayList);
+            pagerAdapter.notifyItemRemoved(3);
+            pagerAdapter.notifyDataSetChanged();
+            viewPager.invalidate();
+            viewPager.setCurrentItem(1,false);
+        }
     }
 
     @Override
@@ -468,210 +419,3 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         return ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).getCurrentUser().getMonthLimit();
     }
 }
-
-
-
-/*
-    @Override
-    public void setTransactions(ArrayList<Transaction> transactions) {
-        transactionListAdapter.setTransactions(transactions);
-    }
-
-    @Override
-    public void notifyTransactionListDataSetChanged() {
-        transactionListAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public ArrayList<Transaction> getTransactions() {
-        return transactionListAdapter.getItems();
-    }
-
-    @Override
-    public void updateCurrentTransaction(Transaction transaction) {
-        Transaction selectedTransaction = (Transaction) transactionListView.getItemAtPosition(listPosition);
-        //Change the transaction
-        transactionListPresenter.updateTransaction(selectedTransaction, transaction);
-    }
-
-    @Override
-    public void addTransaction(Transaction transaction) {
-        transactionListPresenter.addTransaction(transaction);
-    }
-
-    @Override
-    public void deleteCurrentTransaction() {
-
-    }
-*/
-/*
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-
-        final Transaction transaction;
-
-        if(resultCode == RESULT_OK){
-            if(requestCode == 1){
-                if(data != null){
-                    Bundle bundle = data.getExtras();
-                    String action = bundle.getString("action");
-                    if(action.equals("save")){
-                        Transaction changedTransaction = (Transaction)data.getExtras().getParcelable("transaction");
-                        updateCurrentTransaction(changedTransaction);
-                        if(transactionListPresenter.getTotalExpenditure()> currentUser.getTotalLimit()
-                                || transactionListPresenter.getMonthExpenditure(currentMonth) > currentUser.getMonthLimit()){
-                                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                                    alertDialog.setTitle("Limit reached");
-                                    alertDialog.setMessage("Are you sure you want to make these changes?");
-                                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            //Do nothing
-                                        }
-                                    });
-                                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            Transaction transaction = (Transaction) transactionListView.getItemAtPosition(listPosition);
-                                            Intent intent = new Intent(MainActivity.this, TransactionDetailActivity.class);
-                                            Bundle bundle = new Bundle();
-                                            bundle.putString("type", "edit");
-                                            bundle.putParcelable("transaction", transaction);
-                                            intent.putExtras(bundle);
-                                            MainActivity.this.startActivityForResult(intent, 1);
-                                        }
-                                    });
-                                    alertDialog.show();
-
-                        }
-                    }
-                    else if(action.equals("add")){
-                        transaction = (Transaction)data.getExtras().getParcelable("transaction");
-                        //Add the transaction
-                        addTransaction(transaction);
-                        if(transactionListPresenter.getTotalExpenditure()> currentUser.getTotalLimit()
-                                || transactionListPresenter.getMonthExpenditure(currentMonth) > currentUser.getMonthLimit()){
-                            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                            alertDialog.setTitle("Limit reached");
-                            alertDialog.setMessage("Are you sure you want to make these changes?");
-                            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //Do nothing
-                                }
-                            });
-                            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    transactionListAdapter.remove(transaction);
-                                    transactionListPresenter.deleteTransaction(transaction);
-                                    refreshCurrentMonthTransactions();
-                                }
-                            });
-                            alertDialog.show();
-                        }
-                    }
-                    else{
-                        //Delete the transaction
-                        transaction = (Transaction) transactionListView.getItemAtPosition(listPosition);
-                        transactionListPresenter.deleteTransaction(transaction);
-                    }
-                    refreshCurrentMonthTransactions();
-                }
-            }
-        }
-    }
-
- */
-/*
-    private AdapterView.OnItemSelectedListener sortByOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            String selection = parent.getItemAtPosition(position).toString();
-            if(selection.equals("Price - Ascending")) transactionListPresenter.sortByPrice(true);
-            else if(selection.equals("Price - Descending")) transactionListPresenter.sortByPrice(false);
-            else if(selection.equals("Title - Ascending")) transactionListPresenter.sortByTitle(true);
-            else if(selection.equals("Title - Descending")) transactionListPresenter.sortByTitle(false);
-            else if(selection.equals("Date - Ascending")) transactionListPresenter.sortByDate(true);
-            else if(selection.equals("Date - Descending")) transactionListPresenter.sortByDate(false);
-            else transactionListPresenter.refreshTransactions();
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            transactionListPresenter.refreshTransactions();
-        }
-    };
-
-    private AdapterView.OnItemSelectedListener filterByOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-            transactionListAdapter.getFilter().filter(parent.getItemAtPosition(position).toString());
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            transactionListPresenter.refreshTransactions();
-        }
-    };
-
-    private AdapterView.OnItemClickListener onTransactionListItemClickListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            listPosition = position;
-            Transaction transaction = (Transaction) parent.getItemAtPosition(position);
-            Intent intent = new Intent(MainActivity.this, TransactionDetailActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putString("type", "edit");
-            bundle.putParcelable("transaction", transaction);
-            intent.putExtras(bundle);
-            MainActivity.this.startActivityForResult(intent, 1);
-        }
-    };
-
-    private View.OnClickListener addButtonOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Intent intent = new Intent(MainActivity.this, TransactionDetailActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putString("type", "add");
-            intent.putExtras(bundle);
-            MainActivity.this.startActivityForResult(intent, 1);
-        }
-    };
-
-
-
-    private View.OnClickListener nextButtonOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            currentMonth.nextMonth();
-
-            monthYearTextView.setText(currentMonth.toString());
-            transactionListPresenter.filterByMonth(currentMonth);
-            refreshCurrentMonthTransactions();
-        }
-    };
-
-    private View.OnClickListener previousButtonOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            currentMonth.previousMonth();
-
-            monthYearTextView.setText(currentMonth.toString());
-            refreshCurrentMonthTransactions();
-        }
-    };
-
-    @Override
-    public void refreshCurrentMonthTransactions(){
-        transactionListPresenter.filterByMonth(currentMonth);
-        refreshFilter();
-    }
-    @Override
-    public void refreshFilter(){
-        transactionListAdapter.getFilter().filter(filterBySpinner.getSelectedItem().toString());
-    }
-*/

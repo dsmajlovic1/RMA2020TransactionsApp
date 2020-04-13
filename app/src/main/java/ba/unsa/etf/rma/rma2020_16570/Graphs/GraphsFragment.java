@@ -182,7 +182,18 @@ public class GraphsFragment extends Fragment implements IUnitFilter {
 
     @Override
     public void showByDay(String year) {
+        ValueFormatter weekFormatter = new WeekValueFormatter();
+        XAxis topAxisExp = expenditureBarChart.getXAxis();
+        XAxis topAxisInc = incomeBarChart.getXAxis();
+        XAxis topAxisTot = totalBarChart.getXAxis();
 
+        topAxisExp.setValueFormatter(weekFormatter);
+        topAxisInc.setValueFormatter(weekFormatter);
+        topAxisTot.setValueFormatter(weekFormatter);
+
+        expenditureBarChart.setData(graphsPresenter.getExpenditureByDay(year));
+        incomeBarChart.setData(graphsPresenter.getIncomeByDay(year));
+        totalBarChart.setData(graphsPresenter.getAllByDay(year));
     }
 
     private class MonthValueFormatter extends ValueFormatter {
