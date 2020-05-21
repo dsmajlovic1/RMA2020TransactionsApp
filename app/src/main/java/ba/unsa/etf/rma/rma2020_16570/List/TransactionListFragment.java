@@ -104,7 +104,6 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         View fragmentView = inflater.inflate(R.layout.fragment_list, container, false);
 
         currentMonth = new Month(Calendar.getInstance().getTime());
-
         //Get view resources
         filterBySpinner = (Spinner) fragmentView.findViewById(R.id.filterBySpinner);
         sortBySpinner = (Spinner) fragmentView.findViewById(R.id.sortBySpinner);
@@ -164,6 +163,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
             }
         }
          */
+        refreshCurrentMonthTransactions();
         return fragmentView;
     }
 
@@ -237,11 +237,13 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
             transactionListAdapter.getFilter().filter(parent.getItemAtPosition(position).toString());
+            //transactionListAdapter.notifyDataSetChanged();
         }
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
-            transactionListPresenter.refreshTransactions();
+            //transactionListPresenter.refreshTransactions();
+            transactionListAdapter.getFilter().filter(parent.getItemAtPosition(1).toString());
         }
     };
 

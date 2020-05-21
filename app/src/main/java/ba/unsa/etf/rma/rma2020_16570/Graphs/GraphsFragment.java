@@ -79,8 +79,8 @@ public class GraphsFragment extends Fragment implements IUnitFilter {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View fragmentView = inflater.inflate(R.layout.fragment_graphs, container, false);
 
-        earliestDate = graphsPresenter.getEarliestDate();
-        latestDate = graphsPresenter.getLatestDate();
+        //earliestDate = graphsPresenter.getEarliestDate();
+        //latestDate = graphsPresenter.getLatestDate();
 
         //Get resource
         unitSpinner = fragmentView.findViewById(R.id.unitSpinner);

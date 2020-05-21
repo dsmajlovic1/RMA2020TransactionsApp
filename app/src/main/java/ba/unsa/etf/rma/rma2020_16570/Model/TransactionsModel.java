@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class TransactionsModel {
     public static ArrayList<Transaction> transactions = new ArrayList<Transaction>(){
-        {
+        {/*
             add(new Transaction("25.03.2020", 20.0, "Regular payment March", Transaction.Type.REGULARPAYMENT, "Money received regularly", 30, "25.10.2020"));
             add(new Transaction("15.03.2020", 15.0, "Individual payment March", Transaction.Type.INDIVIDUALPAYMENT, "Item bought", null, null));
             add(new Transaction("22.03.2020", 19.0, "Second Individual payment March", Transaction.Type.INDIVIDUALPAYMENT, "Another item bought", null, null));
@@ -31,6 +31,7 @@ public class TransactionsModel {
             add(new Transaction("10.02.2020", 15.0, "Another Individual income February", Transaction.Type.INDIVIDUALINCOME, null, null, null));
             add(new Transaction("20.02.2020", 17.0, "Third Individual income February", Transaction.Type.INDIVIDUALINCOME, null, null, null));
             add(new Transaction("20.02.2019", 17.0, "Individual income February 2019", Transaction.Type.INDIVIDUALINCOME, null, null, null));
+            */
         }
     };
 }

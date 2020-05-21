@@ -13,13 +13,14 @@ public class Transaction implements Parcelable {
 
     public enum Type {INDIVIDUALPAYMENT, REGULARPAYMENT, PURCHASE, INDIVIDUALINCOME, REGULARINCOME}
 
+    private Integer id;
     private Date date;
-    private Double amount;
     private String tittle;
-    private Type type;
+    private Double amount;
     private String itemDescription;
     private Integer transactionInterval;
     private Date endDate;
+    private Type type;
 
     public Transaction(){
         this.date = null;
@@ -29,7 +30,7 @@ public class Transaction implements Parcelable {
         this.itemDescription = "";
         this.endDate = null;
     }
-
+/*
     public Transaction(String date, Double amount, String tittle, Type type, String itemDescription, Integer transactionInterval, String endDate) {
         try {
             this.date = new SimpleDateFormat("dd.MM.yyyy").parse(date);
@@ -49,6 +50,44 @@ public class Transaction implements Parcelable {
             }
         }
 
+    }
+
+ */
+    public Transaction(Integer id, Date date, String tittle, Double amount, String itemDescription, Integer transactionInterval, Date endDate, Type type) {
+        this.id = id;
+        this.date = date;
+        this.tittle = tittle;
+        this.amount = amount;
+        this.itemDescription = itemDescription;
+        this.transactionInterval = transactionInterval;
+        if(endDate != null){
+            this.endDate = endDate;
+        }
+        this.type = type;
+    }
+    public Transaction(Integer id, String  date, String tittle, Double amount, String itemDescription, Integer transactionInterval, String endDate, Type type) {
+        this.id = id;
+        try {
+            //this.date = new SimpleDateFormat("dd.MM.yyyy").parse(date);
+            this.date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(date);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        this.tittle = tittle;
+        this.amount = amount;
+        this.itemDescription = itemDescription;
+        this.transactionInterval = transactionInterval;
+        if(endDate != null){
+            try {
+                //this.endDate = new SimpleDateFormat("dd.MM.yyyy").parse(endDate);
+                //this.date = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+                this.date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        this.type = type;
     }
 
     public static Comparator<Transaction> compareByAmount = new Comparator<Transaction>() {
@@ -126,6 +165,14 @@ public class Transaction implements Parcelable {
         if(itemDescription != null) dest.writeString(itemDescription);
         if(transactionInterval != null) dest.writeInt(transactionInterval);
         if(endDate != null) dest.writeSerializable(endDate);
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Date getDate() {

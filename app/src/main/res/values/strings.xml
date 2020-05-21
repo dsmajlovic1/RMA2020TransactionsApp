@@ -3,4 +3,9 @@
     <string name="budget_text">Budget:</string>
     <string name="month_limit_text">Month limit:</string>
     <string name="total_limit_text">Total limit:</string>
+    <string name="api_id">f1893f1a-ea09-4b91-b480-48621fea5a94</string>
+    <string name="root">http://rma20-app-rmaws.apps.us-west-1.starter.openshift-online.com</string>
+    <string name="post_method">POST</string>
+    <string name="get_method">GET</string>
+    <string name="delete_method">DELETE</string>
 </resources>

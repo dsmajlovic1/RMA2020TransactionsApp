@@ -5,8 +5,8 @@ import com.github.mikephil.charting.data.BarData;
 import java.util.Date;
 
 public interface IGraphsPresenter {
-    Date getEarliestDate();
-    Date getLatestDate();
+    //Date getEarliestDate();
+    //Date getLatestDate();
     BarData getIncomeByMonth(String year);
     BarData getExpenditureByMonth(String year);
     BarData getAllByMonth(String year);

@@ -21,11 +21,11 @@ public class GraphsPresenter implements IGraphsPresenter {
     private ITransactionListInteractor transactionListInteractor;
     public ITransactionListInteractor getTransactionListInteractor(){
         if(transactionListInteractor==null){
-            transactionListInteractor = new TransactionListInteractor();
+            transactionListInteractor = null;
         }
         return transactionListInteractor;
     }
-
+/*
     @Override
     public Date getEarliestDate() {
         return getTransactionListInteractor().getEarliestDate();
@@ -35,7 +35,7 @@ public class GraphsPresenter implements IGraphsPresenter {
     public Date getLatestDate() {
         return getTransactionListInteractor().getLatestDate();
     }
-
+*/
     @Override
     public BarData getIncomeByMonth(String year) {
         Calendar cal = Calendar.getInstance();
