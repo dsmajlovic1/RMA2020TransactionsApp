@@ -79,7 +79,9 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
 
     @Override
     public void updateTransaction(Transaction transaction, Transaction newTransaction) {
-        transactionListInteractor.update(transaction, newTransaction);
+        String query = "/transactions/"+transaction.getId().toString();
+        new TransactionListInteractor(context, this, "POST", newTransaction).execute(query);
+        //transactionListInteractor.update(transaction, newTransaction);
     }
 
     @Override
@@ -89,7 +91,10 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
 
     @Override
     public void addTransaction(Transaction transaction) {
-        transactionListInteractor.add(transaction);
+        String query = "/transactions";
+        Log.i("Presenter", "addTransaction");
+        new TransactionListInteractor(context, this, "POST", transaction).execute(query);
+        //transactionListInteractor.add(transaction);
     }
 
     @Override

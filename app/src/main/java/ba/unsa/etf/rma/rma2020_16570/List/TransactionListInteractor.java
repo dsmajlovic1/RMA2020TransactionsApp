@@ -39,6 +39,7 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
     private String type;
     private String query;
     private JSONObject postData;
+    //private Transaction postData;
     private ArrayList<Transaction> transactions;
     private OnTransactionsFetched caller;
     private Context context;
@@ -55,12 +56,15 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
         if (postData != null) {
             this.postData = convertTransactionToJSON(postData);
         }
+
+
+        //this.postData = postData;
     }
 
     public JSONObject convertTransactionToJSON(Transaction transaction){
         JSONObject object = new JSONObject();
         try {
-            object.put("id", transaction.getId());
+            //object.put("id", transaction.getId());
             object.put("date", transaction.getDate());
             object.put("title", transaction.getTittle());
             object.put("amount", transaction.getAmount());
@@ -140,8 +144,8 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                 String object = convertStreamToString(in);
                 JSONObject jo = new JSONObject(object);
-                Log.e("Object",jo.toString());
                 JSONArray results = jo.getJSONArray("transactions");
+                Log.e("Results", jo.toString());
                 for (int i = 0; i < results.length(); i++) {
                     JSONObject transaction = results.getJSONObject(i);
                     Integer id = transaction.getInt("id");
@@ -176,6 +180,28 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
                     OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
                     writer.write(postData.toString());
                     writer.flush();
+
+                    int statusCode = urlConnection.getResponseCode();
+
+                    if (statusCode ==  200) {
+
+                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+
+                        String response = convertStreamToString(inputStream);
+
+                        Log.i("Response", response);
+
+                        // From here you can convert the string to JSON with whatever JSON parser you like to use
+                        // After converting the string to JSON, I call my custom callback. You can follow this process too, or you can implement the onPostExecute(Result) method
+                    } else {
+                        // Status code is not 200
+                        // Do something to handle the error
+                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+
+                        String response = convertStreamToString(inputStream);
+
+                        Log.i("Response not 200", response);
+                    }
                 }
             }
             else if (type.equals("DELETE")){
@@ -184,6 +210,7 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
             else{
 
             }
+            return  null;
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -199,6 +226,9 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
         super.onPostExecute(aVoid);
         if(type.equals("GET")){
             caller.onDone(transactions);
+        }
+        if(type.equals("POST")){
+            Log.i("POST", "post execute");
         }
     }
 

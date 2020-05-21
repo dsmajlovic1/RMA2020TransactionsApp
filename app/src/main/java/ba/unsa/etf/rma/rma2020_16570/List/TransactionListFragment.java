@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -196,6 +197,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     @Override
     public void addTransaction(Transaction transaction) {
+        Log.i("Fragment", "addTransaction");
         getPresenter().addTransaction(transaction);
     }
 

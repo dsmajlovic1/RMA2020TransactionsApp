@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,30 +75,35 @@ public class TransactionDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
+
+        Log.i("Detail fragment", "onCreate");
+        typeSpinner = (Spinner) view.findViewById(R.id.typeSpinner);
+
+        //Spinner
+        typeSpinnerAdapter = new TypeSpinnerAdapter(getActivity(), R.layout.filter_spinner_item, TransactionListFragment.filterTypes);
+        typeSpinnerAdapter.setDropDownViewResource(R.layout.filter_spinner_item);
+        typeSpinner.setAdapter(typeSpinnerAdapter);
+        typeSpinnerAdapter.notifyDataSetChanged();
+
+        //Get resources
+        dateEditText = (EditText) view.findViewById(R.id.dateEditText);
+        amountEditText = (EditText) view.findViewById(R.id.amountEditText);
+        titleEditText = (EditText) view.findViewById(R.id.titleEditText);
+        itemDescriptionEditText = (EditText) view.findViewById(R.id.itemDescriptionEditText);
+        transactionIntervalEditText = (EditText) view.findViewById(R.id.transactionIntervalEditText);
+        endDateEditText = (EditText) view.findViewById(R.id.endDateEditText);
+        deleteButton = (Button) view.findViewById(R.id.deleteButton);
+        saveButton = (Button) view.findViewById(R.id.saveButton);
+
+        saveButton.setOnClickListener(saveButtonOnClickListener);
+
         if(getArguments()!= null && getArguments().containsKey("type")) typeOfActivity = getArguments().getString("type");
         if (getArguments() != null && getArguments().containsKey("transaction")) {
             String typeOfActivity;
             //getPresenter().setMovie(getArguments().getParcelable("movie"));
 
-            //Get resources
-            dateEditText = (EditText) view.findViewById(R.id.dateEditText);
-            amountEditText = (EditText) view.findViewById(R.id.amountEditText);
-            titleEditText = (EditText) view.findViewById(R.id.titleEditText);
-            typeSpinner = (Spinner) view.findViewById(R.id.typeSpinner);
-            itemDescriptionEditText = (EditText) view.findViewById(R.id.itemDescriptionEditText);
-            transactionIntervalEditText = (EditText) view.findViewById(R.id.transactionIntervalEditText);
-            endDateEditText = (EditText) view.findViewById(R.id.endDateEditText);
-            saveButton = (Button) view.findViewById(R.id.saveButton);
-            deleteButton = (Button) view.findViewById(R.id.deleteButton);
-
-            //Spinner
-            typeSpinnerAdapter = new TypeSpinnerAdapter(getActivity(), R.layout.filter_spinner_item, TransactionListFragment.filterTypes);
-            typeSpinnerAdapter.setDropDownViewResource(R.layout.filter_spinner_item);
-            typeSpinner.setAdapter(typeSpinnerAdapter);
-            typeSpinnerAdapter.notifyDataSetChanged();
 
             //Assign button onClickListeners
-            saveButton.setOnClickListener(saveButtonOnClickListener);
             deleteButton.setOnClickListener(deleteButtonOnClickListener);
             if(getArguments()!= null){
                 typeOfActivity = getArguments().getString("type");
@@ -129,6 +135,10 @@ public class TransactionDetailFragment extends Fragment {
                 }
             }
         }
+        else {
+            transaction = new Transaction();
+            deleteButton.setEnabled(false);
+        }
         //Ostale vrijednosti se trebaju popuniti
         return view;
     }
@@ -151,6 +161,7 @@ public class TransactionDetailFragment extends Fragment {
             } catch (ParseException e) {
                 date = null;
             }
+            Log.e(dateEditText.getText().toString().trim(), date.toString());
             transaction.setDate(date);
             transaction.setAmount(Double.parseDouble(amountEditText.getText().toString()));
             transaction.setTittle(titleEditText.getText().toString());
@@ -175,9 +186,11 @@ public class TransactionDetailFragment extends Fragment {
             }
             //Change
             if(typeOfActivity.equals("edit")){
+                Log.e("Edit", "trigger");
                 getCommunication().edit(transaction);
             }
             else {
+                Log.i("Detail Fragment", "save");
                 getCommunication().save(transaction);
             }
         }

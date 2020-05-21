@@ -231,7 +231,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         else {
             listFragment = (TransactionListFragment) arrayList.get(arrayList.indexOf(transactionListFragment));
             listFragment.addTransaction(transaction);
-        }
+        }/*
         if(listFragment.getPresenter().getTotalExpenditure()> listFragment.getCurrentUser().getTotalLimit()
                 || listFragment.getPresenter().getMonthExpenditure(listFragment.getCurrentMonth()) > listFragment.getCurrentUser().getMonthLimit()){
             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -297,7 +297,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             pagerAdapter.notifyItemRemoved(1);
             viewPager.invalidate();
             viewPager.setCurrentItem(1,false);
-        }
+        }*/
 
     }
 
@@ -317,7 +317,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             listFragment.updateCurrentTransaction(changed);
         }
         oldTransaction = listFragment.getSelectedTransaction();
-
+        /*
         if(listFragment.getPresenter().getTotalExpenditure()> listFragment.getCurrentUser().getTotalLimit()
                 || listFragment.getPresenter().getMonthExpenditure(listFragment.getCurrentMonth()) > listFragment.getCurrentUser().getMonthLimit()) {
             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
@@ -362,6 +362,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                 }
             });
             alertDialog.show();
+
         }
         else {
             listFragment.notifyTransactionListDataSetChanged();
@@ -381,6 +382,8 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             viewPager.invalidate();
             viewPager.setCurrentItem(1,false);
         }
+
+         */
     }
 
     @Override
