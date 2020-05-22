@@ -257,6 +257,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                         pagerAdapter.notifyItemRemoved(1);
                         viewPager.invalidate();
                         viewPager.setCurrentItem(1,false);
+                        transactionListFragment.refreshCurrentMonthTransactions();
                     }
                 }
             });
@@ -297,6 +298,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             pagerAdapter.notifyItemRemoved(1);
             viewPager.invalidate();
             viewPager.setCurrentItem(1,false);
+            transactionListFragment.refreshCurrentMonthTransactions();
         }*/
 
     }
@@ -342,6 +344,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                     pagerAdapter.notifyItemRemoved(1);
                     viewPager.invalidate();
                     viewPager.setCurrentItem(1,false);
+                    transactionListFragment.refreshCurrentMonthTransactions();
                 }
             });
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
@@ -381,6 +384,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             pagerAdapter.notifyItemRemoved(1);
             viewPager.invalidate();
             viewPager.setCurrentItem(1,false);
+            transactionListFragment.refreshCurrentMonthTransactions();
         }
 
          */
@@ -391,7 +395,10 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         if(twoPaneMode){
             FragmentManager fragmentManager = getSupportFragmentManager();
             TransactionListFragment listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
-            if(listFragment!= null) listFragment.deleteCurrentTransaction();
+            if(listFragment!= null) {
+                listFragment.deleteCurrentTransaction();
+                transactionListFragment.refreshCurrentMonthTransactions();
+            }
         }
         else{
             ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).deleteCurrentTransaction();
@@ -406,6 +413,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             pagerAdapter.notifyDataSetChanged();
             viewPager.invalidate();
             viewPager.setCurrentItem(1,false);
+            transactionListFragment.refreshCurrentMonthTransactions();
         }
     }
 

@@ -86,7 +86,9 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
 
     @Override
     public void deleteTransaction(Transaction transaction) {
-        transactionListInteractor.delete(transaction);
+        //transactionListInteractor.delete(transaction);
+        String query = "/transactions/"+transaction.getId().toString();
+        new TransactionListInteractor(context, this, "DELETE", null).execute(query);
     }
 
     @Override

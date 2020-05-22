@@ -135,39 +135,50 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
         }
          */
         query = strings[0];
+        String url1 = context.getString(R.string.root)+"/account/"+context.getString(R.string.api_id).trim()+query.trim();
         try{
-            URL url = new URL( context.getString(R.string.root)+"/account/"+context.getString(R.string.api_id).trim()+query.trim());
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             if(type.trim().equals("GET")){
                 transactions =new ArrayList<Transaction>();
+                int j = 0;
+                while (true){
+                    URL url = new URL( url1+"?page="+j);
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                String object = convertStreamToString(in);
-                JSONObject jo = new JSONObject(object);
-                JSONArray results = jo.getJSONArray("transactions");
-                Log.e("Results", jo.toString());
-                for (int i = 0; i < results.length(); i++) {
-                    JSONObject transaction = results.getJSONObject(i);
-                    Integer id = transaction.getInt("id");
-                    String date = transaction.getString("date");
-                    String title = transaction.getString("title");
-                    Double amount = transaction.getDouble("amount");
-                    Transaction.Type transactionType = convertIntToType(transaction.getInt("TransactionTypeId"));
-                    Integer transactionInterval = null;
-                    String endDate = null;
-                    String itemDescription = null;
-                    if(transactionType != Transaction.Type.INDIVIDUALINCOME && transactionType != Transaction.Type.REGULARINCOME){
-                        itemDescription = transaction.getString("itemDescription");
-                    }
-                    if(transactionType == Transaction.Type.REGULARINCOME || transactionType == Transaction.Type.REGULARPAYMENT){
-                        transactionInterval = transaction.getInt("transactionInterval");
-                        endDate = transaction.getString("endDate");
-                    }
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                    String object = convertStreamToString(in);
+                    JSONObject jo = new JSONObject(object);
+                    JSONArray results = jo.getJSONArray("transactions");
+                    if(results.length() == 0) break;
+                    Log.e("Results", jo.toString());
 
-                    transactions.add(new Transaction(id, date, title, amount, itemDescription, transactionInterval, endDate, transactionType));
+                    for (int i = 0; i < results.length(); i++) {
+                        JSONObject transaction = results.getJSONObject(i);
+                        Integer id = transaction.getInt("id");
+                        String date = transaction.getString("date");
+                        String title = transaction.getString("title");
+                        Double amount = transaction.getDouble("amount");
+                        Transaction.Type transactionType = convertIntToType(transaction.getInt("TransactionTypeId"));
+                        Integer transactionInterval = null;
+                        String endDate = null;
+                        String itemDescription = null;
+                        if (transactionType != Transaction.Type.INDIVIDUALINCOME && transactionType != Transaction.Type.REGULARINCOME) {
+                            itemDescription = transaction.getString("itemDescription");
+                        }
+                        if (transactionType == Transaction.Type.REGULARINCOME || transactionType == Transaction.Type.REGULARPAYMENT) {
+                            transactionInterval = transaction.getInt("transactionInterval");
+                            endDate = transaction.getString("endDate");
+                        }
+
+                        transactions.add(new Transaction(id, date, title, amount, itemDescription, transactionInterval, endDate, transactionType));
+                    }
+                    urlConnection.disconnect();
+                    j++;
                 }
+                //URL url = new URL( url1);
             }
             else if (type.equals("POST")){
+                URL url = new URL( url1);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setDoOutput(true);
                 urlConnection.setChunkedStreamingMode(0);
                 urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -205,7 +216,31 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
                 }
             }
             else if (type.equals("DELETE")){
+                URL url = new URL( url1);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod(type);
+
+                int statusCode = urlConnection.getResponseCode();
+
+                if (statusCode ==  200) {
+
+                    InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+
+                    String response = convertStreamToString(inputStream);
+
+                    Log.i("Response", response);
+
+                    // From here you can convert the string to JSON with whatever JSON parser you like to use
+                    // After converting the string to JSON, I call my custom callback. You can follow this process too, or you can implement the onPostExecute(Result) method
+                } else {
+                    // Status code is not 200
+                    // Do something to handle the error
+                    InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+
+                    String response = convertStreamToString(inputStream);
+
+                    Log.i("Response not 200", response);
+                }
             }
             else{
 
