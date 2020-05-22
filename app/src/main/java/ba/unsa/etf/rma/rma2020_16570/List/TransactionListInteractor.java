@@ -128,12 +128,6 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
 
     @Override
     protected Void doInBackground(String... strings) {
-        /*try{
-            query = URLEncoder.encode(strings[0], "utf-8");
-        } catch (UnsupportedEncodingException e){
-            e.printStackTrace();
-        }
-         */
         query = strings[0];
         String url1 = context.getString(R.string.root)+"/account/"+context.getString(R.string.api_id).trim()+query.trim();
         try{

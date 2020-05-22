@@ -14,7 +14,7 @@ import ba.unsa.etf.rma.rma2020_16570.Model.Account;
 import ba.unsa.etf.rma.rma2020_16570.R;
 import ba.unsa.etf.rma.rma2020_16570.View.IAccount;
 
-public class BudgetFragment extends Fragment {
+public class BudgetFragment extends Fragment implements ISetBudget {
     private EditText budgetEditText;
     private EditText monthLimitEditText;
     private EditText totalLimitEditText;
@@ -23,7 +23,7 @@ public class BudgetFragment extends Fragment {
     private IBudgetPresenter budgetPresenter;
     public IBudgetPresenter getBudgetPresenter(){
         if(budgetPresenter==null){
-            budgetPresenter = new BudgetPresenter();
+            budgetPresenter = new BudgetPresenter(this.getContext(), this);
         }
         return budgetPresenter;
     }
@@ -54,24 +54,31 @@ public class BudgetFragment extends Fragment {
         }
 
         saveButton.setOnClickListener(saveOnClickListener);
+        getBudgetPresenter().getAccount();
         return fragmentView;
     }
-    /*@Override
-    public void onPause(){
-        super.onPause();
-        IAccount accountInfo = (IAccount) getActivity();
-        accountInfo.setBudget(Double.valueOf(budgetEditText.getText().toString()));
-        accountInfo.setTotalLimit(Double.valueOf(totalLimitEditText.getText().toString()));
-        accountInfo.setMonthLimit(Double.valueOf(monthLimitEditText.getText().toString()));
-    }*/
 
     private View.OnClickListener saveOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            IAccount accountInfo = (IAccount) getActivity();
+            /*IAccount accountInfo = (IAccount) getActivity();
             accountInfo.setBudget(Double.valueOf(budgetEditText.getText().toString()));
             accountInfo.setTotalLimit(Double.valueOf(totalLimitEditText.getText().toString()));
-            accountInfo.setMonthLimit(Double.valueOf(monthLimitEditText.getText().toString()));
+            accountInfo.setMonthLimit(Double.valueOf(monthLimitEditText.getText().toString()));*/
+            Account account = new Account(Double.valueOf(budgetEditText.getText().toString()), Double.valueOf(totalLimitEditText.getText().toString()), Double.valueOf(monthLimitEditText.getText().toString()));
+            getBudgetPresenter().setAccount(account);
         }
     };
+
+    @Override
+    public void setAccount(Account account) {
+        //budgetEditText = (EditText)this.getView().findViewById(R.id.budgetEditText);
+        //monthLimitEditText = (EditText)this.getView().findViewById(R.id.monthLimitEditText);
+        //totalLimitEditText = (EditText)this.getView().findViewById(R.id.totalLimitEditText);
+
+        //Set values
+        budgetEditText.setText(account.getBudget().toString());
+        monthLimitEditText.setText(account.getMonthLimit().toString());
+        totalLimitEditText.setText(account.getTotalLimit().toString());
+    }
 }

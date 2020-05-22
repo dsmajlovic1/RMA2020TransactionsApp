@@ -21,6 +21,9 @@ import java.util.List;
 
 import ba.unsa.etf.rma.rma2020_16570.Adapter.TransactionListAdapter;
 import ba.unsa.etf.rma.rma2020_16570.Adapter.TypeSpinnerAdapter;
+import ba.unsa.etf.rma.rma2020_16570.Budget.BudgetPresenter;
+import ba.unsa.etf.rma.rma2020_16570.Budget.IBudgetPresenter;
+import ba.unsa.etf.rma.rma2020_16570.Budget.ISetBudget;
 import ba.unsa.etf.rma.rma2020_16570.Detail.TransactionDetailFragment;
 import ba.unsa.etf.rma.rma2020_16570.Model.Account;
 import ba.unsa.etf.rma.rma2020_16570.Model.Month;
@@ -30,7 +33,7 @@ import ba.unsa.etf.rma.rma2020_16570.View.IFragmentCommunication;
 import ba.unsa.etf.rma.rma2020_16570.View.MainActivity;
 import ba.unsa.etf.rma.rma2020_16570.View.TransactionDetailActivity;
 
-public class TransactionListFragment extends Fragment implements ITransactionListView {
+public class TransactionListFragment extends Fragment implements ITransactionListView, ISetBudget {
 
     public static List<String> sortByList = Arrays.asList("Price - Ascending", "Price - Descending","Title - Ascending",
             "Title - Descending", "Date - Ascending", "Date - Descending");
@@ -69,6 +72,14 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     public Month getCurrentMonth(){ return currentMonth;}
 
+    private IBudgetPresenter budgetPresenter;
+    public IBudgetPresenter getBudgetPresenter(){
+        if(budgetPresenter==null){
+            budgetPresenter = new BudgetPresenter(this.getContext(), this);
+        }
+        return budgetPresenter;
+    }
+
     public ITransactionListPresenter getPresenter(){
         if(transactionListPresenter == null){
             this.transactionListPresenter = new TransactionListPresenter(this, getActivity());
@@ -77,6 +88,13 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     }
 
     private OnItemClick onItemClick;
+
+    @Override
+    public void setAccount(Account account) {
+        globalAmountTextView.setText(account.getTotalLimit().toString());
+        limitTextView.setText(account.getMonthLimit().toString());
+    }
+
     public interface OnItemClick {
         public void onItemClicked(Transaction transaction);
     }
@@ -117,8 +135,8 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         addButton = (Button) fragmentView.findViewById(R.id.addButton);
 
         //Set amounts
-        globalAmountTextView.setText(currentUser.getTotalLimit().toString());
-        limitTextView.setText(currentUser.getMonthLimit().toString());
+        //globalAmountTextView.setText(currentUser.getTotalLimit().toString());
+        //limitTextView.setText(currentUser.getMonthLimit().toString());
 
         //Initialize sortBySpinner
         sortByAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, sortByList);
@@ -164,6 +182,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
             }
         }
          */
+        getBudgetPresenter().getAccount();
         refreshCurrentMonthTransactions();
         return fragmentView;
     }
