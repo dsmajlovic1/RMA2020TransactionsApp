@@ -1,7 +1,6 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,14 +23,12 @@ import ba.unsa.etf.rma.rma2020_16570.Adapter.TypeSpinnerAdapter;
 import ba.unsa.etf.rma.rma2020_16570.Budget.BudgetPresenter;
 import ba.unsa.etf.rma.rma2020_16570.Budget.IBudgetPresenter;
 import ba.unsa.etf.rma.rma2020_16570.Budget.ISetBudget;
-import ba.unsa.etf.rma.rma2020_16570.Detail.TransactionDetailFragment;
 import ba.unsa.etf.rma.rma2020_16570.Model.Account;
 import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.R;
 import ba.unsa.etf.rma.rma2020_16570.View.IFragmentCommunication;
 import ba.unsa.etf.rma.rma2020_16570.View.MainActivity;
-import ba.unsa.etf.rma.rma2020_16570.View.TransactionDetailActivity;
 
 public class TransactionListFragment extends Fragment implements ITransactionListView, ISetBudget {
 
@@ -216,7 +213,6 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     @Override
     public void addTransaction(Transaction transaction) {
-        Log.i("Fragment", "addTransaction");
         getPresenter().addTransaction(transaction);
     }
 

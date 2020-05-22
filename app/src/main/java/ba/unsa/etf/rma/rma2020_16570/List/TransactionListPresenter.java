@@ -1,17 +1,13 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
 import android.content.Context;
-import android.util.Log;
-import android.view.animation.TranslateAnimation;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.concurrent.ThreadLocalRandom;
 
 import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
-import ba.unsa.etf.rma.rma2020_16570.R;
 
 public class TransactionListPresenter implements ITransactionListPresenter, TransactionListInteractor.OnTransactionsFetched {
     private ITransactionListView transactionListView;
@@ -94,7 +90,6 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
     @Override
     public void addTransaction(Transaction transaction) {
         String query = "/transactions";
-        Log.i("Presenter", "addTransaction");
         new TransactionListInteractor(context, this, "POST", transaction).execute(query);
         //transactionListInteractor.add(transaction);
     }
@@ -117,7 +112,6 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
     @Override
     public void onDone(ArrayList<Transaction> transactions) {
         //this.transactions = transactions;
-        Log.w("Presenter", "onDone");
         if(filter){
             doFiltering(transactions);
         }
@@ -128,7 +122,6 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
     }
     private void doFiltering(ArrayList<Transaction> originalData){
         //ArrayList<Transaction> originalData = new ArrayList<>(transactionListInteractor.get());
-        Log.i("Month", "doFiltering");
         ArrayList<Transaction> filtered = new ArrayList<Transaction>();
         for(int i = 0; i < originalData.size(); i++){
             Transaction transaction = originalData.get(i);

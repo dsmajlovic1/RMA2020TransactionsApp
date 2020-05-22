@@ -1,14 +1,10 @@
 package ba.unsa.etf.rma.rma2020_16570.View;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.FrameLayout;
 
@@ -19,11 +15,7 @@ import ba.unsa.etf.rma.rma2020_16570.Budget.BudgetFragment;
 import ba.unsa.etf.rma.rma2020_16570.Detail.TransactionDetailFragment;
 import ba.unsa.etf.rma.rma2020_16570.Graphs.GraphsFragment;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListFragment;
-import ba.unsa.etf.rma.rma2020_16570.Model.Account;
-import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
-import ba.unsa.etf.rma.rma2020_16570.List.ITransactionListView;
-import ba.unsa.etf.rma.rma2020_16570.List.TransactionListPresenter;
 import ba.unsa.etf.rma.rma2020_16570.R;
 
 public class MainActivity extends FragmentActivity implements TransactionListFragment.OnItemClick,

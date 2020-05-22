@@ -2,7 +2,6 @@ package ba.unsa.etf.rma.rma2020_16570.Detail;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,9 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
@@ -29,7 +26,6 @@ import ba.unsa.etf.rma.rma2020_16570.R;
 import ba.unsa.etf.rma.rma2020_16570.View.IFragmentCommunication;
 import ba.unsa.etf.rma.rma2020_16570.View.MainActivity;
 import ba.unsa.etf.rma.rma2020_16570.View.TextChangedWatcher;
-import ba.unsa.etf.rma.rma2020_16570.View.TransactionDetailActivity;
 
 import static android.app.Activity.RESULT_OK;
 

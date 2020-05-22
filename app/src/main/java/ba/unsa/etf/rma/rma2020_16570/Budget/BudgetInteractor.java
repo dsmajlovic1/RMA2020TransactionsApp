@@ -2,7 +2,6 @@ package ba.unsa.etf.rma.rma2020_16570.Budget;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,23 +59,6 @@ public class BudgetInteractor extends AsyncTask<String, Void, Void> {
                     writer.write(postData.toString());
                     writer.flush();
 
-                    int statusCode = urlConnection.getResponseCode();
-
-                    if (statusCode ==  200) {
-
-                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-
-                        String response = convertStreamToString(inputStream);
-
-                        Log.i("Response", response);
-
-                    } else {
-                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-
-                        String response = convertStreamToString(inputStream);
-
-                        Log.i("Response not 200", response);
-                    }
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -123,9 +105,6 @@ public class BudgetInteractor extends AsyncTask<String, Void, Void> {
         super.onPostExecute(aVoid);
         if(type.equals("GET")){
             caller.onDone(account);
-        }
-        if(type.equals("POST")){
-            Log.i("POST", "post execute");
         }
     }
 
