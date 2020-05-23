@@ -240,13 +240,14 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         if(twoPaneMode){
             FragmentManager fragmentManager = getSupportFragmentManager();
             listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
-            if(listFragment!= null) listFragment.addTransaction(transaction);
+            //if(listFragment!= null) listFragment.addTransaction(transaction);
 
         }
         else {
             listFragment = (TransactionListFragment) arrayList.get(arrayList.indexOf(transactionListFragment));
-            listFragment.addTransaction(transaction);
+            //listFragment.addTransaction(transaction);
         }
+
 
         newTransaction = transaction;
         GraphsPresenter alerts = new GraphsPresenter(getApplicationContext(), this);
@@ -454,7 +455,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                     public void onClick(DialogInterface dialog, int which) {
                         if(!twoPaneMode){
                             transactionListFragment.notifyTransactionListDataSetChanged();
-                            //new TransactionListPresenter(transactionListFragment, getApplicationContext()).addTransaction(newTransaction);
+                            new TransactionListPresenter(transactionListFragment, getApplicationContext()).addTransaction(newTransaction);
                             pagerAdapter.setChange(false);
 
                             getSupportFragmentManager().beginTransaction()
@@ -487,7 +488,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                                     .replace(R.id.transactions_list,detailFragment)
                                     .addToBackStack(null)
                                     .commit();*/
-                            new TransactionListPresenter(transactionListFragment, getApplicationContext()).deleteTransaction(newTransaction);
+                            //new TransactionListPresenter(transactionListFragment, getApplicationContext()).deleteTransaction(newTransaction);
                         }
 
                     }
