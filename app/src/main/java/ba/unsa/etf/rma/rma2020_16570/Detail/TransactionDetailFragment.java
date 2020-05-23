@@ -32,6 +32,7 @@ import static android.app.Activity.RESULT_OK;
 public class TransactionDetailFragment extends Fragment {
     private Context parent;
     private Transaction transaction;
+    private Transaction oldTransaction;
 
     //Resources
     private EditText dateEditText;
@@ -72,7 +73,6 @@ public class TransactionDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
 
-        Log.i("Detail fragment", "onCreate");
         typeSpinner = (Spinner) view.findViewById(R.id.typeSpinner);
 
         //Spinner
@@ -107,6 +107,7 @@ public class TransactionDetailFragment extends Fragment {
                 if(typeOfActivity.equals("edit")){
                     getPresenter().setTransaction(getArguments().getParcelable("transaction"));
                     transaction = getPresenter().getTransaction();
+                    oldTransaction = new Transaction(transaction);
 
                     //Set resource value from data
                     dateEditText.setText(simpleDateFormat.format(transaction.getDate()));
@@ -182,11 +183,9 @@ public class TransactionDetailFragment extends Fragment {
             }
             //Change
             if(typeOfActivity.equals("edit")){
-                Log.e("Edit", "trigger");
-                getCommunication().edit(transaction);
+                getCommunication().edit(transaction, oldTransaction);
             }
             else {
-                Log.i("Detail Fragment", "save");
                 getCommunication().save(transaction);
             }
         }
@@ -202,7 +201,7 @@ public class TransactionDetailFragment extends Fragment {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    getCommunication().delete();
+                    getCommunication().delete(transaction);
                 }
             });
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {

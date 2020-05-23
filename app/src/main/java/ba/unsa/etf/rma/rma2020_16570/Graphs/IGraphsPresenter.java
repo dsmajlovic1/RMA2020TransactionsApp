@@ -4,6 +4,8 @@ import com.github.mikephil.charting.data.BarData;
 
 import java.util.Date;
 
+import ba.unsa.etf.rma.rma2020_16570.Model.Month;
+
 public interface IGraphsPresenter {
     //Date getEarliestDate();
     //Date getLatestDate();
@@ -19,4 +21,5 @@ public interface IGraphsPresenter {
     BarData getIncomeByDay(String year);
     BarData getExpenditureByDay(String year);
     BarData getAllByDay(String year);
+    void fetchExpenditures(Month month);
 }

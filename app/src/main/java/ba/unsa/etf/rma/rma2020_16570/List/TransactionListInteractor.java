@@ -3,6 +3,7 @@ package ba.unsa.etf.rma.rma2020_16570.List;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -165,6 +166,7 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
                 //URL url = new URL( url1);
             }
             else if (type.equals("POST")){
+                Log.e("POST", postData.toString());
                 URL url = new URL( url1);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setDoOutput(true);
@@ -180,7 +182,7 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
                     writer.write(postData.toString());
                     writer.flush();
 
-                    /*
+
                     int statusCode = urlConnection.getResponseCode();
 
                     if (statusCode ==  200) {
@@ -190,15 +192,25 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
                     } else {
                         InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
                         String response = convertStreamToString(inputStream);
-
                     }
-                    */
+
                 }
             }
             else if (type.equals("DELETE")){
                 URL url = new URL( url1);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod(type);
+
+                int statusCode = urlConnection.getResponseCode();
+
+                if (statusCode ==  200) {
+                    InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                    String response = convertStreamToString(inputStream);
+
+                } else {
+                    InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                    String response = convertStreamToString(inputStream);
+                }
             }
             else{
 

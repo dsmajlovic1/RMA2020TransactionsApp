@@ -25,22 +25,36 @@ public class GraphsPresenter implements IGraphsPresenter, TransactionListInterac
     private String year;
     private Context context;
     private OnGraphDataFetched caller;
+    private Boolean expenditure = false;
+    private Month month;
 
     public interface OnGraphDataFetched{
         void setGraphValues(ArrayList<BarData> graphData);
+    }
+
+    private OnExpendituresFetched alertCaller;
+
+    public interface OnExpendituresFetched{
+        void callAlerts(ArrayList<Double> expenditures);
     }
 
     public GraphsPresenter(Context context, OnGraphDataFetched caller) {
         this.caller = caller;
         this.context = context;
     }
-
+    public GraphsPresenter(Context context, OnExpendituresFetched alertCaller) {
+        this.alertCaller = alertCaller;
+        this.context = context;
+    }
+/*
     public ITransactionListInteractor getTransactionListInteractor(){
         if(transactionListInteractor==null){
             transactionListInteractor = null;
         }
         return transactionListInteractor;
     }
+
+ */
 /*
     @Override
     public Date getEarliestDate() {
@@ -272,25 +286,42 @@ public class GraphsPresenter implements IGraphsPresenter, TransactionListInterac
     }
 
     @Override
+    public void fetchExpenditures(Month month) {
+        this.expenditure = true;
+        this.month = month;
+        new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+
+    }
+
+    @Override
     public void onDone(ArrayList<Transaction> transactions) {
         this.transactions = transactions;
-        ArrayList<BarData> list = new ArrayList<BarData>();
-        if(type == "DAY"){
-            list.add(getIncomeByDay(year));
-            list.add(getExpenditureByDay(year));
-            list.add(getAllByDay(year));
-        }
-        else if(type == "WEEK"){
-            list.add(getIncomeByWeek(year));
-            list.add(getExpenditureByWeek(year));
-            list.add(getAllByWeek(year));
+        if(expenditure){
+            ArrayList<Double> expenditures = new ArrayList<Double>();
+            expenditures.add(getTotalExpenditure());
+            expenditures.add(getMonthExpenditure(month));
+            alertCaller.callAlerts(expenditures);
         }
         else{
-            list.add(getIncomeByMonth(year));
-            list.add(getExpenditureByMonth(year));
-            list.add(getAllByMonth(year));
+            ArrayList<BarData> list = new ArrayList<BarData>();
+            if(type == "DAY"){
+                list.add(getIncomeByDay(year));
+                list.add(getExpenditureByDay(year));
+                list.add(getAllByDay(year));
+            }
+            else if(type == "WEEK"){
+                list.add(getIncomeByWeek(year));
+                list.add(getExpenditureByWeek(year));
+                list.add(getAllByWeek(year));
+            }
+            else{
+                list.add(getIncomeByMonth(year));
+                list.add(getExpenditureByMonth(year));
+                list.add(getAllByMonth(year));
+            }
+            caller.setGraphValues(list);
         }
-        caller.setGraphValues(list);
+
     }
 
     //Funkcije prebacene iz stare TransactionInteractor klase

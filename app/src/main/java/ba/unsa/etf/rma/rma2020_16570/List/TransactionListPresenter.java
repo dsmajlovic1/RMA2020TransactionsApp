@@ -1,6 +1,7 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -76,6 +77,7 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
     @Override
     public void updateTransaction(Transaction transaction, Transaction newTransaction) {
         String query = "/transactions/"+transaction.getId().toString();
+        Log.i("Update Presenter", query);
         new TransactionListInteractor(context, this, "POST", newTransaction).execute(query);
         //transactionListInteractor.update(transaction, newTransaction);
     }

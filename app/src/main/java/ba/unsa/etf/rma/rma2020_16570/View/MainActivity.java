@@ -5,22 +5,34 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.rma2020_16570.Adapter.ScreenSlidePagerAdapter;
 import ba.unsa.etf.rma.rma2020_16570.Budget.BudgetFragment;
+import ba.unsa.etf.rma.rma2020_16570.Budget.BudgetPresenter;
+import ba.unsa.etf.rma.rma2020_16570.Budget.ISetBudget;
 import ba.unsa.etf.rma.rma2020_16570.Detail.TransactionDetailFragment;
 import ba.unsa.etf.rma.rma2020_16570.Graphs.GraphsFragment;
+import ba.unsa.etf.rma.rma2020_16570.Graphs.GraphsPresenter;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListFragment;
+import ba.unsa.etf.rma.rma2020_16570.List.TransactionListInteractor;
+import ba.unsa.etf.rma.rma2020_16570.List.TransactionListPresenter;
+import ba.unsa.etf.rma.rma2020_16570.Model.Account;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.R;
 
 public class MainActivity extends FragmentActivity implements TransactionListFragment.OnItemClick,
                                                                 TransactionListFragment.TwoPaneMode,
                                                                 IFragmentCommunication,
+                                                                GraphsPresenter.OnExpendituresFetched,
+                                                                ICheckLimits,
+                                                                ISetBudget,
                                                                 IAccount{
 
     private boolean twoPaneMode;
@@ -35,6 +47,14 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
     private ArrayList<Fragment> arrayList;
     private int currentItem;
+    private Transaction oldTransaction;
+    private Transaction newTransaction;
+    private String saveActionType = "save";
+    private Double totalExpenditure;
+    private Double totalMonthExpenditure;
+
+    private Double accountTotalLimit;
+    private Double accountMonthLimit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,6 +234,9 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
     @Override
     public void save(final Transaction transaction) {
         final TransactionListFragment listFragment;
+
+        saveActionType = "save";
+
         if(twoPaneMode){
             FragmentManager fragmentManager = getSupportFragmentManager();
             listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
@@ -223,82 +246,22 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         else {
             listFragment = (TransactionListFragment) arrayList.get(arrayList.indexOf(transactionListFragment));
             listFragment.addTransaction(transaction);
-        }/*
-        if(listFragment.getPresenter().getTotalExpenditure()> listFragment.getCurrentUser().getTotalLimit()
-                || listFragment.getPresenter().getMonthExpenditure(listFragment.getCurrentMonth()) > listFragment.getCurrentUser().getMonthLimit()){
-            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-            alertDialog.setTitle("Limit reached");
-            alertDialog.setMessage("Are you sure you want to make these changes?");
-            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if(!twoPaneMode){
-                        listFragment.notifyTransactionListDataSetChanged();
-                        pagerAdapter.setChange(false);
-
-                        getSupportFragmentManager().beginTransaction()
-                                .remove(graphsFragment)
-                                .remove(transactionListFragment)
-                                .remove(budgetFragment)
-                                .commit();
-                        arrayList.set(0,graphsFragment);
-                        arrayList.set(1, transactionListFragment);
-                        arrayList.set(2, budgetFragment);
-
-                        pagerAdapter.setArrayList(arrayList);
-                        pagerAdapter.notifyItemRemoved(1);
-                        viewPager.invalidate();
-                        viewPager.setCurrentItem(1,false);
-                        transactionListFragment.refreshCurrentMonthTransactions();
-                    }
-                }
-            });
-            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if(twoPaneMode == false){
-                        TransactionDetailFragment detailFragment = new TransactionDetailFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("type", "edit");
-                        bundle.putParcelable("transaction", transaction);
-                        detailFragment.setArguments(bundle);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.transactions_list,detailFragment)
-                                .addToBackStack(null)
-                                .commit();
-                    }
-
-                }
-            });
-            alertDialog.show();
-
         }
-        else {
-            listFragment.notifyTransactionListDataSetChanged();
-            pagerAdapter.setChange(false);
 
-            getSupportFragmentManager().beginTransaction()
-                    .remove(graphsFragment)
-                    .remove(transactionListFragment)
-                    .remove(budgetFragment)
-                    .commit();
-            arrayList.set(0,graphsFragment);
-            arrayList.set(1, transactionListFragment);
-            arrayList.set(2, budgetFragment);
-
-            pagerAdapter.setArrayList(arrayList);
-            pagerAdapter.notifyItemRemoved(1);
-            viewPager.invalidate();
-            viewPager.setCurrentItem(1,false);
-            transactionListFragment.refreshCurrentMonthTransactions();
-        }*/
-
+        newTransaction = transaction;
+        GraphsPresenter alerts = new GraphsPresenter(getApplicationContext(), this);
+        alerts.fetchExpenditures(listFragment.getCurrentMonth());
     }
 
     @Override
-    public void edit(Transaction changed) {
+    public void edit(Transaction changed, Transaction old) {
         final TransactionListFragment listFragment;
-        final Transaction oldTransaction;
+        Log.e("Start", "Edit");
+
+        oldTransaction = old;
+
+        saveActionType = "edit";
+
         if(twoPaneMode){
             FragmentManager fragmentManager = getSupportFragmentManager();
             listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
@@ -310,80 +273,16 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             listFragment = (TransactionListFragment) arrayList.get(arrayList.indexOf(transactionListFragment));
             listFragment.updateCurrentTransaction(changed);
         }
-        oldTransaction = listFragment.getSelectedTransaction();
-        /*
-        if(listFragment.getPresenter().getTotalExpenditure()> listFragment.getCurrentUser().getTotalLimit()
-                || listFragment.getPresenter().getMonthExpenditure(listFragment.getCurrentMonth()) > listFragment.getCurrentUser().getMonthLimit()) {
-            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-            alertDialog.setTitle("Limit reached");
-            alertDialog.setMessage("Are you sure you want to make these changes?");
-            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    listFragment.notifyTransactionListDataSetChanged();
-                    pagerAdapter.setChange(false);
+        newTransaction = changed;
+        GraphsPresenter alerts = new GraphsPresenter(getApplicationContext(), this);
+        alerts.fetchExpenditures(listFragment.getCurrentMonth());
 
-                    getSupportFragmentManager().beginTransaction()
-                            .remove(graphsFragment)
-                            .remove(transactionListFragment)
-                            .remove(budgetFragment)
-                            .commit();
-                    arrayList.set(0,graphsFragment);
-                    arrayList.set(1, transactionListFragment);
-                    arrayList.set(2, budgetFragment);
-
-                    pagerAdapter.setArrayList(arrayList);
-                    pagerAdapter.notifyItemRemoved(1);
-                    viewPager.invalidate();
-                    viewPager.setCurrentItem(1,false);
-                    transactionListFragment.refreshCurrentMonthTransactions();
-                }
-            });
-            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (!twoPaneMode) {
-                        TransactionDetailFragment detailFragment = new TransactionDetailFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("type", "edit");
-                        bundle.putParcelable("transaction", oldTransaction);
-                        detailFragment.setArguments(bundle);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.transactions_list, detailFragment)
-                                .addToBackStack(null)
-                                .commit();
-                    }
-
-                }
-            });
-            alertDialog.show();
-
-        }
-        else {
-            listFragment.notifyTransactionListDataSetChanged();
-            pagerAdapter.setChange(false);
-
-            getSupportFragmentManager().beginTransaction()
-                    .remove(graphsFragment)
-                    .remove(transactionListFragment)
-                    .remove(budgetFragment)
-                    .commit();
-            arrayList.set(0,graphsFragment);
-            arrayList.set(1, transactionListFragment);
-            arrayList.set(2, budgetFragment);
-
-            pagerAdapter.setArrayList(arrayList);
-            pagerAdapter.notifyItemRemoved(1);
-            viewPager.invalidate();
-            viewPager.setCurrentItem(1,false);
-            transactionListFragment.refreshCurrentMonthTransactions();
-        }
-
-         */
     }
 
     @Override
-    public void delete() {
+    public void delete(Transaction transaction) {
+        Log.e("Call", "delete");
+        new TransactionListPresenter(transactionListFragment, getApplicationContext()).deleteTransaction(transaction);
         if(twoPaneMode){
             FragmentManager fragmentManager = getSupportFragmentManager();
             TransactionListFragment listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
@@ -408,6 +307,26 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             transactionListFragment.refreshCurrentMonthTransactions();
         }
     }
+    @Override
+    public void callAlerts(ArrayList<Double> expenditures) {
+        totalExpenditure = expenditures.get(0);
+        totalMonthExpenditure = expenditures.get(1);
+
+        Log.e("Middle", "callAlerts");
+
+        new BudgetPresenter(getApplicationContext(), this).getAccount();
+    }
+
+    @Override
+    public void saveAlertDialog(ArrayList<Transaction> transactions) {
+
+    }
+
+    @Override
+    public void editAlertDialog(ArrayList<Transaction> transactions) {
+
+    }
+
 
     @Override
     public void setBudget(Double budget) {
@@ -439,5 +358,162 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
     @Override
     public Double getMonthLimit() {
         return ((TransactionListFragment)arrayList.get(arrayList.indexOf(transactionListFragment))).getCurrentUser().getMonthLimit();
+    }
+
+    @Override
+    public void setAccount(Account account) {
+        this.accountTotalLimit = account.getTotalLimit();
+        this.accountMonthLimit = account.getMonthLimit();
+
+        Log.e("End", "setAccount");
+
+        //final TransactionListFragment listFragment;
+        //FragmentManager fragmentManager = getSupportFragmentManager();
+        //listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
+
+        if(transactionListFragment == null) transactionListFragment = new TransactionListFragment();
+
+        if(saveActionType.equals("edit")){
+            if(totalExpenditure> accountTotalLimit
+                    || totalMonthExpenditure > accountMonthLimit) {
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                alertDialog.setTitle("Limit reached");
+                alertDialog.setMessage("Are you sure you want to make these changes?");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        transactionListFragment.notifyTransactionListDataSetChanged();
+                        pagerAdapter.setChange(false);
+
+                        getSupportFragmentManager().beginTransaction()
+                                .remove(graphsFragment)
+                                .remove(transactionListFragment)
+                                .remove(budgetFragment)
+                                .commit();
+                        arrayList.set(0,graphsFragment);
+                        arrayList.set(1, transactionListFragment);
+                        arrayList.set(2, budgetFragment);
+
+                        pagerAdapter.setArrayList(arrayList);
+                        pagerAdapter.notifyItemRemoved(1);
+                        viewPager.invalidate();
+                        viewPager.setCurrentItem(1,false);
+                        transactionListFragment.refreshCurrentMonthTransactions();
+                    }
+                });
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (!twoPaneMode) {
+                            new TransactionListPresenter(transactionListFragment, transactionListFragment.getContext()).updateTransaction(oldTransaction, oldTransaction);
+                            /*TransactionDetailFragment detailFragment = new TransactionDetailFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putString("type", "edit");
+                            bundle.putParcelable("transaction", oldTransaction);
+                            detailFragment.setArguments(bundle);
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.transactions_list, detailFragment)
+                                    .addToBackStack(null)
+                                    .commit();*/
+
+                        }
+
+                    }
+                });
+                alertDialog.show();
+
+            }
+            else {
+                transactionListFragment.notifyTransactionListDataSetChanged();
+                pagerAdapter.setChange(false);
+
+                getSupportFragmentManager().beginTransaction()
+                        .remove(graphsFragment)
+                        .remove(transactionListFragment)
+                        .remove(budgetFragment)
+                        .commit();
+                arrayList.set(0,graphsFragment);
+                arrayList.set(1, transactionListFragment);
+                arrayList.set(2, budgetFragment);
+
+                pagerAdapter.setArrayList(arrayList);
+                pagerAdapter.notifyItemRemoved(1);
+                viewPager.invalidate();
+                viewPager.setCurrentItem(1,false);
+                transactionListFragment.refreshCurrentMonthTransactions();
+            }
+        }
+        else{
+            if(totalExpenditure> accountTotalLimit
+                    || totalMonthExpenditure > accountMonthLimit){
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                alertDialog.setTitle("Limit reached");
+                alertDialog.setMessage("Are you sure you want to make these changes?");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(!twoPaneMode){
+                            transactionListFragment.notifyTransactionListDataSetChanged();
+                            //new TransactionListPresenter(transactionListFragment, getApplicationContext()).addTransaction(newTransaction);
+                            pagerAdapter.setChange(false);
+
+                            getSupportFragmentManager().beginTransaction()
+                                    .remove(graphsFragment)
+                                    .remove(transactionListFragment)
+                                    .remove(budgetFragment)
+                                    .commit();
+                            arrayList.set(0,graphsFragment);
+                            arrayList.set(1, transactionListFragment);
+                            arrayList.set(2, budgetFragment);
+
+                            pagerAdapter.setArrayList(arrayList);
+                            pagerAdapter.notifyItemRemoved(1);
+                            viewPager.invalidate();
+                            viewPager.setCurrentItem(1,false);
+                            transactionListFragment.refreshCurrentMonthTransactions();
+                        }
+                    }
+                });
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(twoPaneMode == false){
+                            /*TransactionDetailFragment detailFragment = new TransactionDetailFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putString("type", "edit");
+                            bundle.putParcelable("transaction", newTransaction);
+                            detailFragment.setArguments(bundle);
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.transactions_list,detailFragment)
+                                    .addToBackStack(null)
+                                    .commit();*/
+                            new TransactionListPresenter(transactionListFragment, getApplicationContext()).deleteTransaction(newTransaction);
+                        }
+
+                    }
+                });
+                alertDialog.show();
+
+            }
+            else {
+                transactionListFragment.notifyTransactionListDataSetChanged();
+                pagerAdapter.setChange(false);
+
+                getSupportFragmentManager().beginTransaction()
+                        .remove(graphsFragment)
+                        .remove(transactionListFragment)
+                        .remove(budgetFragment)
+                        .commit();
+                arrayList.set(0,graphsFragment);
+                arrayList.set(1, transactionListFragment);
+                arrayList.set(2, budgetFragment);
+
+                pagerAdapter.setArrayList(arrayList);
+                pagerAdapter.notifyItemRemoved(1);
+                viewPager.invalidate();
+                viewPager.setCurrentItem(1,false);
+                transactionListFragment.refreshCurrentMonthTransactions();
+            }
+        }
     }
 }

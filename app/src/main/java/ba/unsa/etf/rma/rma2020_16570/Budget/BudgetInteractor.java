@@ -59,6 +59,16 @@ public class BudgetInteractor extends AsyncTask<String, Void, Void> {
                     writer.write(postData.toString());
                     writer.flush();
 
+                    int statusCode = urlConnection.getResponseCode();
+
+                    if (statusCode ==  200) {
+                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                        String response = convertStreamToString(inputStream);
+
+                    } else {
+                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                        String response = convertStreamToString(inputStream);
+                    }
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();

@@ -53,6 +53,16 @@ public class Transaction implements Parcelable {
     }
 
  */
+    public Transaction(Transaction transaction){
+        this.id = transaction.id;
+        this.date = transaction.date;
+        this.tittle = transaction.tittle;
+        this.amount = transaction.amount;
+        this.itemDescription = transaction.itemDescription;
+        this.transactionInterval = transaction.transactionInterval;
+        this.endDate = transaction.endDate;
+        this.type = transaction.type;
+    }
     public Transaction(Integer id, Date date, String tittle, Double amount, String itemDescription, Integer transactionInterval, Date endDate, Type type) {
         this.id = id;
         this.date = date;
