@@ -7,6 +7,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.FrameLayout;
@@ -26,14 +27,16 @@ import ba.unsa.etf.rma.rma2020_16570.List.TransactionListPresenter;
 import ba.unsa.etf.rma.rma2020_16570.Model.Account;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.R;
+import ba.unsa.etf.rma.rma2020_16570.Util.ConnectivityBroadcastReceiver;
+import ba.unsa.etf.rma.rma2020_16570.Util.TransactionDBOpenHelper;
 
 public class MainActivity extends FragmentActivity implements TransactionListFragment.OnItemClick,
                                                                 TransactionListFragment.TwoPaneMode,
                                                                 IFragmentCommunication,
                                                                 GraphsPresenter.OnExpendituresFetched,
-                                                                ICheckLimits,
                                                                 ISetBudget,
-                                                                IAccount{
+                                                                IAccount,
+                                                                ConnectivityBroadcastReceiver.ConnectionChange {
 
     private boolean twoPaneMode;
 
@@ -55,6 +58,9 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
     private Double accountTotalLimit;
     private Double accountMonthLimit;
+
+    private ConnectivityBroadcastReceiver connectivityBroadcastReceiver;
+    private IntentFilter iFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,9 +116,26 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             viewPager.setCurrentItem(1,false);
         }
 
-
+        connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
+        connectivityBroadcastReceiver.setMainActivity(MainActivity.this);
+        iFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+        registerReceiver(connectivityBroadcastReceiver, iFilter);
 
     }
+    @Override
+    public void onResume() {
+
+        super.onResume();
+        registerReceiver(connectivityBroadcastReceiver, iFilter);
+    }
+
+    @Override
+    public void onPause() {
+
+        unregisterReceiver(connectivityBroadcastReceiver);
+        super.onPause();
+    }
+
     private ViewPager2.OnPageChangeCallback pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
         @Override
         public void onPageSelected(final int position) {
@@ -166,6 +189,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                 arrayList.set(0,graphsFragment);
                 arrayList.set(1, transactionListFragment);
                 arrayList.set(2, budgetFragment);
+                transactionListFragment.notifyTransactionListDataSetChanged();
 
                 pagerAdapter.setArrayList(arrayList);
                 pagerAdapter.notifyItemRemoved(1);
@@ -188,11 +212,6 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                     .commit();
         }
         else{
-            /*getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.transactions_list,pagerAdapter.createFragment(3))
-                    .addToBackStack(null)
-                    .commit();
-            //pagerAdapter.createFragment(3)*/
             pagerAdapter.setChange(true);
             pagerAdapter.prepareChange("edit", detailFragment);
             pagerAdapter.createFragment(3);
@@ -308,6 +327,12 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             transactionListFragment.refreshCurrentMonthTransactions();
         }
     }
+
+    @Override
+    public void back() {
+        this.onBackPressed();
+    }
+
     @Override
     public void callAlerts(ArrayList<Double> expenditures) {
         totalExpenditure = expenditures.get(0);
@@ -317,17 +342,6 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
         new BudgetPresenter(getApplicationContext(), this).getAccount();
     }
-
-    @Override
-    public void saveAlertDialog(ArrayList<Transaction> transactions) {
-
-    }
-
-    @Override
-    public void editAlertDialog(ArrayList<Transaction> transactions) {
-
-    }
-
 
     @Override
     public void setBudget(Double budget) {
@@ -514,6 +528,18 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                 viewPager.invalidate();
                 viewPager.setCurrentItem(1,false);
                 transactionListFragment.refreshCurrentMonthTransactions();
+            }
+        }
+    }
+
+    @Override
+    public void changeConnectionStatus(Boolean connected) {
+        if (twoPaneMode){
+            ((TransactionDetailFragment)getSupportFragmentManager().findFragmentById(R.id.transaction_detail)).changeConnectionStatus(connected);
+        }
+        else{
+            if(pagerAdapter.containsItem(3)){
+                ((TransactionDetailFragment)pagerAdapter.getItemAtPosition(3)).changeConnectionStatus(connected);
             }
         }
     }

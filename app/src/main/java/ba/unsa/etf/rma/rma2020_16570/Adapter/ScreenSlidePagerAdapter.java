@@ -96,6 +96,10 @@ public class ScreenSlidePagerAdapter extends FragmentStateAdapter {
     }
     @Override
     public boolean containsItem (long itemId){
+        if(itemId >= arrayList.size()) return false;
         return createdFragments.contains(arrayList.get((int) itemId).getClass().getName());
+    }
+    public Fragment getItemAtPosition(long itemId){
+        return arrayList.get((int)itemId);
     }
 }

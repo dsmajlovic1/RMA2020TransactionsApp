@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ba.unsa.etf.rma.rma2020_16570">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="true"
@@ -18,6 +19,16 @@
             </intent-filter>
         </activity>
         <activity android:name=".View.TransactionDetailActivity"></activity>
+
+        <service android:enabled="true" android:name=".List.TransactionListInteractor"/>
+        <provider
+            android:authorities="rma.provider.transactions"
+            android:name=".Util.TransactionContentProvider">
+        </provider>
+        <provider
+            android:authorities="rma.provider.deletes"
+            android:name=".Util.DeleteContentProvider">
+        </provider>
     </application>
 
 </manifest>

@@ -1,5 +1,7 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
+import android.database.Cursor;
+
 import java.util.ArrayList;
 
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
@@ -13,4 +15,5 @@ public interface ITransactionListView {
     void refreshCurrentMonthTransactions();
     void refreshFilter();
     void deleteCurrentTransaction();
+    void setCursor(Cursor cursor);
 }

@@ -1,9 +1,19 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
 
+import android.app.IntentService;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,8 +41,14 @@ import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.Model.TransactionsModel;
 import ba.unsa.etf.rma.rma2020_16570.R;
+import ba.unsa.etf.rma.rma2020_16570.Util.TransactionDBOpenHelper;
 
-public class TransactionListInteractor extends AsyncTask<String, Void, Void> implements ITransactionListInteractor {
+//public class TransactionListInteractor extends AsyncTask<String, Void, Void> implements ITransactionListInteractor {
+public class TransactionListInteractor extends IntentService implements ITransactionListInteractor {
+
+    final public static int STATUS_FINISHED=0;
+    final public static int STATUS_ERROR=1;
+
     private String type;
     private String query;
     private JSONObject postData;
@@ -43,9 +59,16 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
     public interface  OnTransactionsFetched{
     public void onDone(ArrayList<Transaction> transactions);
     }
+    public TransactionListInteractor(){
+        super(null);
+    }
 
-    public TransactionListInteractor(OnTransactionsFetched caller) { this.caller = caller;}
+    public TransactionListInteractor(Context context) {
+        super(null);
+        this.context = context;
+    }
     public TransactionListInteractor(Context context, OnTransactionsFetched caller, String type, Transaction postData) {
+        super(null);
         this.context = context;
         this.caller = caller;
         this.type = type;
@@ -53,8 +76,11 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
             this.postData = convertTransactionToJSON(postData);
         }
 
-
         //this.postData = postData;
+    }
+    @Override
+    public void onCreate() {
+        super.onCreate();
     }
 
     public JSONObject convertTransactionToJSON(Transaction transaction){
@@ -121,7 +147,138 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
         else
             return 5;
     }
+    @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+        final ResultReceiver receiver =intent.getParcelableExtra("receiver");
+        Bundle bundle = new Bundle();
+        String type = intent.getStringExtra("type");
+        /*String params = intent.getStringExtra("query");
+        String query = null;
+        try {
+            query = URLEncoder.encode(params, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }*/
+        String query = intent.getStringExtra("query");
+        String url1 = this.getApplicationContext().getString(R.string.root)+"/account/"+this.getApplicationContext().getString(R.string.api_id).trim()+query.trim();
+        try{
+            if(type.trim().equals("GET")){
+                Log.e("Interactor", "GET");
+                transactions =new ArrayList<Transaction>();
+                int j = 0;
+                while (true){
+                    URL url = new URL( url1+"?page="+j);
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                    String object = convertStreamToString(in);
+                    JSONObject jo = new JSONObject(object);
+                    JSONArray results = jo.getJSONArray("transactions");
+                    if(results.length() == 0) break;
+
+                    for (int i = 0; i < results.length(); i++) {
+                        JSONObject transaction = results.getJSONObject(i);
+                        Integer id = transaction.getInt("id");
+                        String date = transaction.getString("date");
+                        String title = transaction.getString("title");
+                        Double amount = transaction.getDouble("amount");
+                        Transaction.Type transactionType = convertIntToType(transaction.getInt("TransactionTypeId"));
+                        Integer transactionInterval = null;
+                        String endDate = null;
+                        String itemDescription = null;
+                        if (transactionType != Transaction.Type.INDIVIDUALINCOME && transactionType != Transaction.Type.REGULARINCOME) {
+                            itemDescription = transaction.getString("itemDescription");
+                        }
+                        if (transactionType == Transaction.Type.REGULARINCOME || transactionType == Transaction.Type.REGULARPAYMENT) {
+                            transactionInterval = transaction.getInt("transactionInterval");
+                            endDate = transaction.getString("endDate");
+                        }
+
+                        transactions.add(new Transaction(id, date, title, amount, itemDescription, transactionInterval, endDate, transactionType));
+                    }
+                    urlConnection.disconnect();
+                    j++;
+                }
+                //URL url = new URL( url1);
+                bundle.putString("type", "GET");
+                bundle.putParcelableArrayList("result", transactions);
+            }
+            else if (type.equals("POST")){
+                postData = convertTransactionToJSON((Transaction) intent.getParcelableExtra("transaction"));
+                Log.e("POST", postData.toString());
+                URL url = new URL( url1);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setDoOutput(true);
+                urlConnection.setChunkedStreamingMode(0);
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+
+                urlConnection.setRequestMethod(type);
+
+                //OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+                //BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "utf-8"));
+                if(postData != null){
+                    OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
+                    writer.write(postData.toString());
+                    writer.flush();
+
+
+                    int statusCode = urlConnection.getResponseCode();
+
+                    if (statusCode ==  200) {
+                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                        String response = convertStreamToString(inputStream);
+
+                    } else {
+                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                        String response = convertStreamToString(inputStream);
+                    }
+
+                }
+                bundle.putString("type", "POST");
+            }
+            else if (type.equals("DELETE")){
+                postData = convertTransactionToJSON((Transaction) intent.getParcelableExtra("transaction"));
+                URL url = new URL( url1);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod(type);
+
+                int statusCode = urlConnection.getResponseCode();
+
+                if (statusCode ==  200) {
+                    InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                    String response = convertStreamToString(inputStream);
+
+                } else {
+                    InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                    String response = convertStreamToString(inputStream);
+                }
+                bundle.putString("type", "DELETE");
+            }
+            else{
+
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            bundle.putString(Intent.EXTRA_TEXT, e.toString());
+            receiver.send(STATUS_ERROR, bundle);
+            return;
+        } catch (IOException e) {
+            e.printStackTrace();
+            bundle.putString(Intent.EXTRA_TEXT, e.toString());
+            receiver.send(STATUS_ERROR, bundle);
+            return;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            bundle.putString(Intent.EXTRA_TEXT, e.toString());
+            receiver.send(STATUS_ERROR, bundle);
+            return;
+        }
+
+        receiver.send(STATUS_FINISHED, bundle);
+
+    }
+
+    /*
     @Override
     protected Void doInBackground(String... strings) {
         query = strings[0];
@@ -233,6 +390,7 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
             caller.onDone(transactions);
         }
     }
+     */
 
     //@Override
     //public ArrayList<Transaction> get() { return TransactionsModel.transactions; }
@@ -251,6 +409,50 @@ public class TransactionListInteractor extends AsyncTask<String, Void, Void> imp
     @Override
     public void add(Transaction transaction) {
         TransactionsModel.transactions.add(transaction);
+    }
+
+    @Override
+    public Transaction getDatabaseTransaction(int id, Context context) {
+        Transaction transaction = new Transaction();
+        ContentResolver cr = context.getApplicationContext().getContentResolver();
+        String[] kolone = null;
+        Uri adresa = ContentUris.withAppendedId(Uri.parse("content://rma.provider.transactions/elements"),id);
+        String where = null;
+        String whereArgs[] = null;
+        String order = null;
+        Cursor cursor = cr.query(adresa,kolone,where,whereArgs,order);
+
+        if (cursor != null){
+            cursor.moveToFirst();
+            int idPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
+            int internalId = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
+            int datePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_DATE);
+            int titlePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TITLE);
+            int amountPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_AMOUNT);
+            int itemDescPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ITEMDESCRIPTION);
+            int intervalPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TRANSACTIONINTERVAL);
+            int endDatePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ENDDATE);
+            int typePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TYPE_ID);
+            Transaction.Type type1 = convertIntToType(cursor.getInt(typePos));
+            Log.e("Date:", cursor.getString(datePos));
+            transaction = new Transaction(cursor.getInt(idPos), cursor.getString(datePos), cursor.getString(titlePos), cursor.getDouble(amountPos),
+                        cursor.getString(itemDescPos), cursor.getInt(intervalPos), cursor.getString(endDatePos), type1);
+            transaction.setInternalId(cursor.getInt(internalId));
+        }
+        cursor.close();
+        return transaction;
+    }
+
+    @Override
+    public Cursor getMonthTransactionsCursor() {
+        ContentResolver cr = context.getApplicationContext().getContentResolver();
+        String[] kolone = null;
+        Uri adresa = Uri.parse("content://rma.provider.transactions/elements");
+        String where = null;
+        String whereArgs[] = null;
+        String order = null;
+        Cursor cur = cr.query(adresa,kolone,where,whereArgs,order);
+        return cur;
     }
 
     @Override

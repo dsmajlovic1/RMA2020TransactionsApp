@@ -12,6 +12,8 @@ public interface ITransactionListPresenter {
     void updateTransaction(Transaction transaction, Transaction newTransaction);
     void deleteTransaction(Transaction transaction);
     void addTransaction(Transaction transaction);
+    Transaction getDatabaseTransaction(int id);
+    void getMoviesCursor(Month month);
     Double getTotalIncome();
     Double getTotalExpenditure();
     Double getMonthExpenditure(Month month);

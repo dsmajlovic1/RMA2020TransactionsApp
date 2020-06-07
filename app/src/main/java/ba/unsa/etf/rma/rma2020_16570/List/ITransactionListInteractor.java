@@ -1,5 +1,8 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
+import android.content.Context;
+import android.database.Cursor;
+
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -11,6 +14,8 @@ public interface ITransactionListInteractor {
     void update(Transaction transaction, Transaction newTransaction);
     void delete(Transaction transaction);
     void add(Transaction transaction);
+    Transaction getDatabaseTransaction(int id, Context context);
+    Cursor getMonthTransactionsCursor();
     Date getEarliestDate();
     Date getLatestDate();
     Double getTotalIncome();

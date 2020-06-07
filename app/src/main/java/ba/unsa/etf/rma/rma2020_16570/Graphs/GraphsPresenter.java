@@ -1,6 +1,9 @@
 package ba.unsa.etf.rma.rma2020_16570.Graphs;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
 
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -14,12 +17,15 @@ import java.util.Date;
 
 import ba.unsa.etf.rma.rma2020_16570.List.ITransactionListInteractor;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListInteractor;
+import ba.unsa.etf.rma.rma2020_16570.List.TransactionListPresenter;
+import ba.unsa.etf.rma.rma2020_16570.List.TransactionListResultReceiver;
 import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.Model.TransactionsModel;
 
-public class GraphsPresenter implements IGraphsPresenter, TransactionListInteractor.OnTransactionsFetched {
+public class GraphsPresenter implements IGraphsPresenter, TransactionListInteractor.OnTransactionsFetched, TransactionListResultReceiver.Receiver {
     private ITransactionListInteractor transactionListInteractor;
+    private TransactionListResultReceiver transactionListResultReceiver;
     private ArrayList<Transaction> transactions;
     private String type;
     private String year;
@@ -27,6 +33,22 @@ public class GraphsPresenter implements IGraphsPresenter, TransactionListInterac
     private OnGraphDataFetched caller;
     private Boolean expenditure = false;
     private Month month;
+
+    @Override
+    public void onResultsReceived(int resultCode, Bundle resultData) {
+        switch (resultCode) {
+            case TransactionListInteractor.STATUS_FINISHED:
+                String type = resultData.getString("type");
+                if(type.equals("GET")){
+                    ArrayList<Transaction> results = resultData.getParcelableArrayList("result");
+                    onDone(results);
+                }
+                break;
+            case TransactionListInteractor.STATUS_ERROR:
+                //transactionListView.setCursor();
+                break;
+        }
+    }
 
     public interface OnGraphDataFetched{
         void setGraphValues(ArrayList<BarData> graphData);
@@ -72,7 +94,15 @@ public class GraphsPresenter implements IGraphsPresenter, TransactionListInterac
     public void fetchDataByMonth(String year) {
         this.type = "MONTH";
         this.year = year;
-        new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+        //new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+        String query = new String("/transactions");
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "GET");
+        intent.putExtra("query", query);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(GraphsPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
     }
 
     @Override
@@ -151,7 +181,15 @@ public class GraphsPresenter implements IGraphsPresenter, TransactionListInterac
     public void fetchDataByWeek(String year) {
         this.type = "WEEK";
         this.year = year;
-        new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+        //new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+        String query = new String("/transactions");
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "GET");
+        intent.putExtra("query", query);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(GraphsPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
     }
 
     @Override
@@ -220,7 +258,15 @@ public class GraphsPresenter implements IGraphsPresenter, TransactionListInterac
     public void fetchDataByDay(String year) {
         this.type = "DAY";
         this.year = year;
-        new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+        //new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+        String query = new String("/transactions");
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "GET");
+        intent.putExtra("query", query);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(GraphsPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
     }
 
     @Override
@@ -289,7 +335,15 @@ public class GraphsPresenter implements IGraphsPresenter, TransactionListInterac
     public void fetchExpenditures(Month month) {
         this.expenditure = true;
         this.month = month;
-        new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+        //new TransactionListInteractor(context, this, "GET", null).execute("/transactions");
+        String query = new String("/transactions");
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "GET");
+        intent.putExtra("query", query);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(GraphsPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
 
     }
 

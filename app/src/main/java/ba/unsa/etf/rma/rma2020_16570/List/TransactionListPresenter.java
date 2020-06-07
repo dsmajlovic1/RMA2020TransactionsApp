@@ -1,6 +1,9 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -10,9 +13,10 @@ import java.util.Collections;
 import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 
-public class TransactionListPresenter implements ITransactionListPresenter, TransactionListInteractor.OnTransactionsFetched {
+public class TransactionListPresenter implements ITransactionListPresenter, TransactionListInteractor.OnTransactionsFetched, TransactionListResultReceiver.Receiver {
     private ITransactionListView transactionListView;
     private ITransactionListInteractor transactionListInteractor;
+    private TransactionListResultReceiver transactionListResultReceiver;
     private ArrayList<Transaction> transactions;
     private Boolean filter;
     private Month filterMonth;
@@ -31,8 +35,16 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
         filter = false;
         //transactionListInteractor = new TransactionListInteractor(this, "GET", null);
         String query = new String("/transactions");
-        new TransactionListInteractor(context, this, "GET", null).execute(query);
-        transactionListView.notifyTransactionListDataSetChanged();
+        //new TransactionListInteractor(context, this, "GET", null).execute(query);
+        //transactionListView.notifyTransactionListDataSetChanged();
+
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "GET");
+        intent.putExtra("query", query);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(TransactionListPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
     }
 
     @Override
@@ -71,29 +83,74 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
         filter = true;
         //transactionListInteractor = new TransactionListInteractor(this, "GET", null);
         String query = new String("/transactions");
-        new TransactionListInteractor(context, this, "GET", null).execute(query);
+        //new TransactionListInteractor(context, this, "GET", null).execute(query);
+
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "GET");
+        intent.putExtra("query", query);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(TransactionListPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
     }
 
     @Override
     public void updateTransaction(Transaction transaction, Transaction newTransaction) {
         String query = "/transactions/"+transaction.getId().toString();
-        Log.i("Update Presenter", query);
-        new TransactionListInteractor(context, this, "POST", newTransaction).execute(query);
+        //new TransactionListInteractor(context, this, "POST", newTransaction).execute(query);
         //transactionListInteractor.update(transaction, newTransaction);
+
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "POST");
+        intent.putExtra("query", query);
+        intent.putExtra("transaction", newTransaction);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(TransactionListPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
     }
 
     @Override
     public void deleteTransaction(Transaction transaction) {
         //transactionListInteractor.delete(transaction);
         String query = "/transactions/"+transaction.getId().toString();
-        new TransactionListInteractor(context, this, "DELETE", null).execute(query);
+       // new TransactionListInteractor(context, this, "DELETE", null).execute(query);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "DELETE");
+        intent.putExtra("query", query);
+        intent.putExtra("transaction", transaction);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(TransactionListPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
     }
 
     @Override
     public void addTransaction(Transaction transaction) {
         String query = "/transactions";
-        new TransactionListInteractor(context, this, "POST", transaction).execute(query);
+        //new TransactionListInteractor(context, this, "POST", transaction).execute(query);
         //transactionListInteractor.add(transaction);
+
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "POST");
+        intent.putExtra("query", query);
+        intent.putExtra("transaction", transaction);
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(TransactionListPresenter.this);
+        intent.putExtra("receiver", transactionListResultReceiver);
+        context.getApplicationContext().startService(intent);
+    }
+
+    @Override
+    public Transaction getDatabaseTransaction(int id) {
+        transactionListInteractor = new TransactionListInteractor(context);
+        return transactionListInteractor.getDatabaseTransaction(id, context);
+    }
+
+    @Override
+    public void getMoviesCursor(Month month) {
+        transactionListInteractor = new TransactionListInteractor(context);
+        transactionListView.setCursor(transactionListInteractor.getMonthTransactionsCursor());
     }
 
     @Override
@@ -122,7 +179,7 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
             transactionListView.notifyTransactionListDataSetChanged();
         }
     }
-    private void doFiltering(ArrayList<Transaction> originalData){
+    private ArrayList<Transaction> doFiltering(ArrayList<Transaction> originalData){
         //ArrayList<Transaction> originalData = new ArrayList<>(transactionListInteractor.get());
         ArrayList<Transaction> filtered = new ArrayList<Transaction>();
         for(int i = 0; i < originalData.size(); i++){
@@ -133,8 +190,28 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
                 filtered.add(transaction);
             }
         }
-        transactionListView.setTransactions(filtered);
-        transactionListView.notifyTransactionListDataSetChanged();
+        //transactionListView.setTransactions(filtered);
+        //transactionListView.notifyTransactionListDataSetChanged();
 
+        return filtered;
+    }
+
+    @Override
+    public void onResultsReceived(int resultCode, Bundle resultData) {
+        switch (resultCode) {
+            case TransactionListInteractor.STATUS_FINISHED:
+                String type = resultData.getString("type");
+                if(type.equals("GET")){
+                    ArrayList<Transaction> results = resultData.getParcelableArrayList("result");
+                    if(filter) results = doFiltering(results);
+                    transactionListView.setTransactions(results);
+                    transactionListView.notifyTransactionListDataSetChanged();
+                }
+                break;
+            case TransactionListInteractor.STATUS_ERROR:
+                transactionListView.setCursor(transactionListInteractor.getMonthTransactionsCursor());
+                transactionListView.notifyTransactionListDataSetChanged();
+                break;
+        }
     }
 }

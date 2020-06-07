@@ -22,6 +22,11 @@ public class Transaction implements Parcelable {
     private Date endDate;
     private Type type;
 
+    private Integer internalId;
+
+    public void setInternalId(Integer id) { internalId = id; }
+    public Integer getInternalId(){ return internalId; }
+
     public Transaction(){
         this.date = null;
         this.amount = 0.0;
@@ -29,6 +34,7 @@ public class Transaction implements Parcelable {
         this.type = Type.INDIVIDUALPAYMENT;
         this.itemDescription = "";
         this.endDate = null;
+        internalId = null;
     }
 /*
     public Transaction(String date, Double amount, String tittle, Type type, String itemDescription, Integer transactionInterval, String endDate) {
@@ -62,6 +68,7 @@ public class Transaction implements Parcelable {
         this.transactionInterval = transaction.transactionInterval;
         this.endDate = transaction.endDate;
         this.type = transaction.type;
+        internalId = null;
     }
     public Transaction(Integer id, Date date, String tittle, Double amount, String itemDescription, Integer transactionInterval, Date endDate, Type type) {
         this.id = id;
@@ -74,6 +81,7 @@ public class Transaction implements Parcelable {
             this.endDate = endDate;
         }
         this.type = type;
+        internalId = null;
     }
     public Transaction(Integer id, String  date, String tittle, Double amount, String itemDescription, Integer transactionInterval, String endDate, Type type) {
         this.id = id;
@@ -98,6 +106,7 @@ public class Transaction implements Parcelable {
             }
         }
         this.type = type;
+        internalId = null;
     }
 
     public static Comparator<Transaction> compareByAmount = new Comparator<Transaction>() {

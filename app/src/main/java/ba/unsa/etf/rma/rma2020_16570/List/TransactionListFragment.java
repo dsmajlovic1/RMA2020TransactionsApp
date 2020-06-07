@@ -1,5 +1,6 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import ba.unsa.etf.rma.rma2020_16570.Adapter.TransactionListAdapter;
+import ba.unsa.etf.rma.rma2020_16570.Adapter.TransactionListCursorAdapter;
 import ba.unsa.etf.rma.rma2020_16570.Adapter.TypeSpinnerAdapter;
 import ba.unsa.etf.rma.rma2020_16570.Budget.BudgetPresenter;
 import ba.unsa.etf.rma.rma2020_16570.Budget.IBudgetPresenter;
@@ -57,6 +59,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     private ArrayAdapter<String> sortByAdapter;
     private TypeSpinnerAdapter filterByAdapter;
     private TransactionListAdapter transactionListAdapter;
+    private TransactionListCursorAdapter transactionListCursorAdapter;
 
     //Presenters
     private TransactionListPresenter transactionListPresenter;
@@ -151,9 +154,13 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
         //Initialize transactionListView
         transactionListAdapter = new TransactionListAdapter(getActivity(), R.layout.transaction_list_item,new ArrayList<Transaction>());
-        transactionListView.setAdapter(transactionListAdapter);
-        transactionListView.setOnItemClickListener(onTransactionListItemClickListener);
-        getPresenter().refreshTransactions();
+        transactionListCursorAdapter = new TransactionListCursorAdapter(getContext(), R.layout.transaction_list_item, null, false);
+        //transactionListView.setAdapter(transactionListAdapter);
+        //transactionListView.setOnItemClickListener(onTransactionListItemClickListener);
+        //getPresenter().refreshTransactions();
+        transactionListView.setAdapter(transactionListCursorAdapter);
+        transactionListView.setOnItemClickListener(onListCursorItemClickListener);
+        transactionListCursorAdapter.notifyDataSetChanged();
 
         //Set onClickListeners
         previousMonthButton.setOnClickListener(previousButtonOnClickListener);
@@ -162,7 +169,8 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
         //Set month
         monthYearTextView.setText(currentMonth.toString());
-        getPresenter().filterByMonth(currentMonth);
+        //getPresenter().filterByMonth(currentMonth);
+        getPresenter().getMoviesCursor(currentMonth);
 
 
         onItemClick= (OnItemClick) getActivity();
@@ -180,7 +188,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         }
          */
         getBudgetPresenter().getAccount();
-        refreshCurrentMonthTransactions();
+        //refreshCurrentMonthTransactions();
         return fragmentView;
     }
 
@@ -191,6 +199,8 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     @Override
     public void setTransactions(ArrayList<Transaction> transactions) {
+        transactionListView.setAdapter(transactionListAdapter);
+        transactionListView.setOnItemClickListener(onTransactionListItemClickListener);
         transactionListAdapter.setTransactions(transactions);
     }
 
@@ -221,6 +231,14 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
         Transaction selectedTransaction = (Transaction) transactionListView.getItemAtPosition(listPosition);
         getPresenter().deleteTransaction(selectedTransaction);
     }
+
+    @Override
+    public void setCursor(Cursor cursor) {
+        transactionListView.setAdapter(transactionListCursorAdapter);
+        transactionListView.setOnItemClickListener(onListCursorItemClickListener);
+        transactionListCursorAdapter.changeCursor(cursor);
+    }
+
     @Override
     public void refreshCurrentMonthTransactions(){
         transactionListPresenter.filterByMonth(currentMonth);
@@ -275,6 +293,16 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
             bundle.putParcelable("transaction", transaction);
             intent.putExtras(bundle);
             getActivity().startActivityForResult(intent, 1);*/
+            onItemClick.onItemClicked(transaction);
+        }
+    };
+    private AdapterView.OnItemClickListener onListCursorItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            listPosition = position;
+            Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+            cursor.moveToPosition(position);
+            Transaction transaction = getPresenter().getDatabaseTransaction(cursor.getInt(cursor.getColumnIndexOrThrow("_id")));
             onItemClick.onItemClicked(transaction);
         }
     };

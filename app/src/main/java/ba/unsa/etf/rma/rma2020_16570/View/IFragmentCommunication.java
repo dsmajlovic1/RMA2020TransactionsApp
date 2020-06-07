@@ -7,4 +7,5 @@ public interface IFragmentCommunication {
     void save(Transaction transaction);
     void edit(Transaction changed, Transaction old);
     void delete(Transaction transaction);
+    void back();
 }

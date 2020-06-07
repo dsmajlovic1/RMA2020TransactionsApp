@@ -2,14 +2,17 @@ package ba.unsa.etf.rma.rma2020_16570.Detail;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
@@ -23,13 +26,14 @@ import ba.unsa.etf.rma.rma2020_16570.List.TransactionListFragment;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListInteractor;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.R;
+import ba.unsa.etf.rma.rma2020_16570.Util.ConnectivityBroadcastReceiver;
 import ba.unsa.etf.rma.rma2020_16570.View.IFragmentCommunication;
 import ba.unsa.etf.rma.rma2020_16570.View.MainActivity;
 import ba.unsa.etf.rma.rma2020_16570.View.TextChangedWatcher;
 
 import static android.app.Activity.RESULT_OK;
 
-public class TransactionDetailFragment extends Fragment {
+public class TransactionDetailFragment extends Fragment implements ConnectivityBroadcastReceiver.ConnectionChange {
     private Context parent;
     private Transaction transaction;
     private Transaction oldTransaction;
@@ -52,6 +56,8 @@ public class TransactionDetailFragment extends Fragment {
     private String typeOfActivity;
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
+    private Boolean toggleConnection = true;
+
     private ITransactionDetailPresenter presenter;
 
     public ITransactionDetailPresenter getPresenter() {
@@ -67,6 +73,13 @@ public class TransactionDetailFragment extends Fragment {
             communication = (MainActivity)getActivity();
         }
         return communication;
+    }
+
+    private ITransactionDetailInteractor transactionDetailInteractor;
+
+    public ITransactionDetailInteractor getTransactionDetailInteractor() {
+        if(transactionDetailInteractor == null) transactionDetailInteractor = new TransactionDetailInteractor();
+        return transactionDetailInteractor;
     }
 
     @Override
@@ -95,7 +108,6 @@ public class TransactionDetailFragment extends Fragment {
 
         if(getArguments()!= null && getArguments().containsKey("type")) typeOfActivity = getArguments().getString("type");
         if (getArguments() != null && getArguments().containsKey("transaction")) {
-            String typeOfActivity;
             //getPresenter().setMovie(getArguments().getParcelable("movie"));
 
 
@@ -108,6 +120,8 @@ public class TransactionDetailFragment extends Fragment {
                     getPresenter().setTransaction(getArguments().getParcelable("transaction"));
                     transaction = getPresenter().getTransaction();
                     oldTransaction = new Transaction(transaction);
+
+                    getTransactionDetailInteractor().save(oldTransaction, getContext());
 
                     //Set resource value from data
                     dateEditText.setText(simpleDateFormat.format(transaction.getDate()));
@@ -136,7 +150,19 @@ public class TransactionDetailFragment extends Fragment {
             transaction = new Transaction();
             deleteButton.setEnabled(false);
         }
-        //Ostale vrijednosti se trebaju popuniti
+        TextView connection = (TextView) view.findViewById(R.id.connectionText);
+        ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(cm.getActiveNetworkInfo() == null){
+            toggleConnection = false;
+            if(typeOfActivity.equals("edit")) connection.setText("Offline izmjena");
+            else connection.setText("Offline dodavanje");
+        }
+        else{
+            toggleConnection = true;
+            connection.setText("Connected");
+        }
+
+
         return view;
     }
 
@@ -181,12 +207,23 @@ public class TransactionDetailFragment extends Fragment {
                 }
                 transaction.setEndDate(endDate);
             }
+            TextView connectionText = (TextView) getView().findViewById(R.id.connectionText);
+            if(connectionText.getText().toString().equals("Connected")) toggleConnection = true;
+            else toggleConnection = false;
             //Change
             if(typeOfActivity.equals("edit")){
-                getCommunication().edit(transaction, oldTransaction);
+                if(toggleConnection) getCommunication().edit(transaction, oldTransaction);
+                else{
+                    getTransactionDetailInteractor().save(transaction, getContext());
+                    getCommunication().back();
+                }
             }
             else {
-                getCommunication().save(transaction);
+                if(toggleConnection) getCommunication().save(transaction);
+                else {
+                    getTransactionDetailInteractor().save(transaction, getContext());
+                    getCommunication().back();
+                }
             }
         }
     };
@@ -201,7 +238,22 @@ public class TransactionDetailFragment extends Fragment {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    getCommunication().delete(transaction);
+                    if(toggleConnection){
+                        getCommunication().delete(transaction);
+                    }
+                    else {
+                        Log.w("Delete", deleteButton.getText().toString());
+                        if(deleteButton.getText().toString().trim().equals("Delete")){
+                            getTransactionDetailInteractor().delete(transaction, getContext());
+                            deleteButton.setText("Undo");
+                        }
+                        else {
+                            getTransactionDetailInteractor().undoDelete(transaction, getContext());
+                            deleteButton.setText("Delete");
+                        }
+
+                    }
+
                 }
             });
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "CANCEL", new DialogInterface.OnClickListener() {
@@ -213,4 +265,20 @@ public class TransactionDetailFragment extends Fragment {
             alertDialog.show();
         }
     };
+
+    @Override
+    public void changeConnectionStatus(Boolean connected) {
+        if(getView()!= null){
+            TextView connection = (TextView) getView().findViewById(R.id.connectionText);
+            if(connected) {
+                toggleConnection = true;
+                connection.setText("Connected");
+            }
+            else{
+                toggleConnection = false;
+                if(typeOfActivity.equals("edit")) connection.setText("Offline izmjena");
+                else connection.setText("Offline dodavanje");
+            }
+        }
+    }
 }
