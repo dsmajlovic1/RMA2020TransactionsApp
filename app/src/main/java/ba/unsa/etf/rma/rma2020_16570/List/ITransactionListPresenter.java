@@ -1,5 +1,7 @@
 package ba.unsa.etf.rma.rma2020_16570.List;
 
+import android.os.ResultReceiver;
+
 import ba.unsa.etf.rma.rma2020_16570.Model.Month;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 
@@ -14,6 +16,7 @@ public interface ITransactionListPresenter {
     void addTransaction(Transaction transaction);
     Transaction getDatabaseTransaction(int id);
     void getMoviesCursor(Month month);
+    void uploadAllData(ResultReceiver mainActivityReceiver);
     Double getTotalIncome();
     Double getTotalExpenditure();
     Double getMonthExpenditure(Month month);

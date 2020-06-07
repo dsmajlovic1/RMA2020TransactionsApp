@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.FrameLayout;
 
@@ -24,6 +25,7 @@ import ba.unsa.etf.rma.rma2020_16570.Graphs.GraphsPresenter;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListFragment;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListInteractor;
 import ba.unsa.etf.rma.rma2020_16570.List.TransactionListPresenter;
+import ba.unsa.etf.rma.rma2020_16570.List.TransactionListResultReceiver;
 import ba.unsa.etf.rma.rma2020_16570.Model.Account;
 import ba.unsa.etf.rma.rma2020_16570.Model.Transaction;
 import ba.unsa.etf.rma.rma2020_16570.R;
@@ -36,7 +38,8 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                                                                 GraphsPresenter.OnExpendituresFetched,
                                                                 ISetBudget,
                                                                 IAccount,
-                                                                ConnectivityBroadcastReceiver.ConnectionChange {
+                                                                ConnectivityBroadcastReceiver.ConnectionChange,
+                                                                TransactionListResultReceiver.Receiver {
 
     private boolean twoPaneMode;
 
@@ -61,6 +64,8 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
     private ConnectivityBroadcastReceiver connectivityBroadcastReceiver;
     private IntentFilter iFilter;
+
+    private TransactionListResultReceiver transactionListResultReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +120,9 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
             viewPager.setCurrentItem(1,false);
         }
+
+        transactionListResultReceiver = new TransactionListResultReceiver(new Handler());
+        transactionListResultReceiver.setTransactionReceiver(MainActivity.this);
 
         connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
         connectivityBroadcastReceiver.setMainActivity(MainActivity.this);
@@ -534,6 +542,17 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
 
     @Override
     public void changeConnectionStatus(Boolean connected) {
+        if(connected){
+            transactionListFragment.getPresenter().uploadAllData(transactionListResultReceiver);
+            //Update online
+            //Delete online
+        }
+        else changeWorkMode(connected);
+
+    }
+
+    @Override
+    public void changeWorkMode(Boolean connected) {
         if (twoPaneMode){
             ((TransactionDetailFragment)getSupportFragmentManager().findFragmentById(R.id.transaction_detail)).changeConnectionStatus(connected);
         }
@@ -541,6 +560,18 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             if(pagerAdapter.containsItem(3)){
                 ((TransactionDetailFragment)pagerAdapter.getItemAtPosition(3)).changeConnectionStatus(connected);
             }
+        }
+    }
+
+    @Override
+    public void onResultsReceived(int resultCode, Bundle resultData) {
+        Boolean connected = resultData.getBoolean("connected");
+        switch (resultCode){
+            case TransactionListInteractor.STATUS_FINISHED:
+                changeWorkMode(connected);
+                break;
+            case TransactionListInteractor.STATUS_ERROR:
+            default:break;
         }
     }
 }

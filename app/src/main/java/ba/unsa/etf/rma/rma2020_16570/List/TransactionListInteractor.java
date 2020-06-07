@@ -254,8 +254,105 @@ public class TransactionListInteractor extends IntentService implements ITransac
                 }
                 bundle.putString("type", "DELETE");
             }
-            else{
+            else if(type.equals("UPLOAD")){
+                //Upload changes
 
+                //Get local changes
+                ContentResolver cr = getApplicationContext().getContentResolver();
+                String[] kolone = null;
+                Uri adresa = Uri.parse("content://rma.provider.transactions/elements");
+                String where = null;
+                String whereArgs[] = null;
+                String order = null;
+                Cursor cursor = cr.query(adresa,kolone,where,whereArgs,order);
+
+                Transaction transaction;
+
+
+                Boolean continueCur = cursor.moveToFirst();
+                while (continueCur){
+                    int idPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
+                    int internalId = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
+                    int datePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_DATE);
+                    int titlePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TITLE);
+                    int amountPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_AMOUNT);
+                    int itemDescPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ITEMDESCRIPTION);
+                    int intervalPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TRANSACTIONINTERVAL);
+                    int endDatePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ENDDATE);
+                    int typePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TYPE_ID);
+                    Transaction.Type type1 = convertIntToType(cursor.getInt(typePos));
+                    transaction = new Transaction(cursor.getInt(idPos), cursor.getString(datePos), cursor.getString(titlePos), cursor.getDouble(amountPos),
+                            cursor.getString(itemDescPos), cursor.getInt(intervalPos), cursor.getString(endDatePos), type1);
+
+                    //Get connection
+                    URL url = new URL( url1+"/"+transaction.getId().toString());
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setDoOutput(true);
+                    urlConnection.setChunkedStreamingMode(0);
+                    urlConnection.setRequestProperty("Content-Type", "application/json");
+
+                    urlConnection.setRequestMethod("POST");
+
+                    postData = convertTransactionToJSON(transaction);
+
+                    if(postData != null){
+                        OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
+                        writer.write(postData.toString());
+                        writer.flush();
+
+
+                        int statusCode = urlConnection.getResponseCode();
+
+                        if (statusCode ==  200) {
+                            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                            String response = convertStreamToString(inputStream);
+
+                        } else {
+                            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                            String response = convertStreamToString(inputStream);
+                        }
+
+                    }
+                    urlConnection.disconnect();
+
+                    continueCur = cursor.moveToNext();
+                }
+                //Delete transactions
+
+
+                //Get local delete
+                //ContentResolver cr = context.getApplicationContext().getContentResolver();
+                //String[] kolone = null;
+                adresa = Uri.parse("content://rma.provider.deletes/elements");
+                //String where = null;
+                //String whereArgs[] = null;
+                //String order = null;
+                cursor = cr.query(adresa,kolone,where,whereArgs,order);
+
+
+                continueCur = cursor.moveToFirst();
+
+                while (continueCur){
+                    URL url = new URL( url1+"/"+String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("id"))));
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestMethod("DELETE");
+
+                    int statusCode = urlConnection.getResponseCode();
+
+                    if (statusCode ==  200) {
+                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                        String response = convertStreamToString(inputStream);
+
+                    } else {
+                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                        String response = convertStreamToString(inputStream);
+                    }
+
+                    urlConnection.disconnect();
+                    cursor.moveToNext();
+                }
+
+                bundle.putString("type", "UPLOAD");
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();

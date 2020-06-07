@@ -2,8 +2,10 @@ package ba.unsa.etf.rma.rma2020_16570.List;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ResultReceiver;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -151,6 +153,16 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
     public void getMoviesCursor(Month month) {
         transactionListInteractor = new TransactionListInteractor(context);
         transactionListView.setCursor(transactionListInteractor.getMonthTransactionsCursor());
+    }
+
+    @Override
+    public void uploadAllData(ResultReceiver mainActivityReceiver) {
+        String query = "/transactions";
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+        intent.putExtra("type", "UPLOAD");
+        intent.putExtra("query", query);
+        intent.putExtra("receiver", mainActivityReceiver);
+        context.getApplicationContext().startService(intent);
     }
 
     @Override

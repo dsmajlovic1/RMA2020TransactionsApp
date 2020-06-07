@@ -281,4 +281,9 @@ public class TransactionDetailFragment extends Fragment implements ConnectivityB
             }
         }
     }
+
+    @Override
+    public void changeWorkMode(Boolean connected) {
+
+    }
 }

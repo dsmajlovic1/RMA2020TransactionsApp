@@ -18,6 +18,7 @@ public class ConnectivityBroadcastReceiver extends BroadcastReceiver {
 
     public interface ConnectionChange{
         void changeConnectionStatus(Boolean connected);
+        void changeWorkMode(Boolean connected);
     }
     @Override
     public void onReceive(Context context, Intent intent) {
