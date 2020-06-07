@@ -39,14 +39,6 @@ public class TransactionDetailInteractor extends IntentService implements ITrans
         Uri transactionsURI = Uri.parse("content://rma.provider.transactions/elements");
         ContentValues values = new ContentValues();
 
-        String[] kolone = null;
-        Uri adresa = ContentUris.withAppendedId(Uri.parse("content://rma.provider.transactions/elements"), TransactionContentProvider.ALL_ROWS);
-        String where = "id = ?";
-        String whereArgs[] = {transaction.getId().toString()};
-        String order = null;
-        Cursor cursor = cr.query(adresa,kolone,where,whereArgs,order);
-
-        values.put(TransactionDBOpenHelper.TRANSACTION_ID, transaction.getId());
         values.put(TransactionDBOpenHelper.TRANSACTION_DATE, dateFormat.format(transaction.getDate()));
         values.put(TransactionDBOpenHelper.TRANSACTION_TITLE, transaction.getTittle());
         values.put(TransactionDBOpenHelper.TRANSACTION_AMOUNT, transaction.getAmount());
@@ -54,15 +46,28 @@ public class TransactionDetailInteractor extends IntentService implements ITrans
         if(transaction.getTransactionInterval()!= null) values.put(TransactionDBOpenHelper.TRANSACTION_TRANSACTIONINTERVAL, transaction.getTransactionInterval());
         if(transaction.getEndDate()!= null) values.put(TransactionDBOpenHelper.TRANSACTION_ENDDATE, dateFormat.format(transaction.getEndDate()));
         values.put(TransactionDBOpenHelper.TRANSACTION_TYPE_ID, convertTypeToInt(transaction.getType()));
-        Log.w("Row count", String.valueOf(cursor.getCount()));
-        if(cursor.getCount()== 0){
-            cr.insert(transactionsURI, values);
-            Log.w("Save", "end");
+
+        if(transaction.getId()!= null){
+            values.put(TransactionDBOpenHelper.TRANSACTION_ID, transaction.getId());
+            String[] kolone = null;
+            Uri adresa = ContentUris.withAppendedId(Uri.parse("content://rma.provider.transactions/elements"), TransactionContentProvider.ALL_ROWS);
+            String where = "id = ?";
+            String whereArgs[] = {transaction.getId().toString()};
+            String order = null;
+            Cursor cursor = cr.query(adresa,kolone,where,whereArgs,order);
+
+            Log.w("Row count", String.valueOf(cursor.getCount()));
+            if(cursor.getCount()== 0){
+                cr.insert(transactionsURI, values);
+                Log.w("Save", "end");
+            }
+            else {
+                Log.e(transactionsURI.toString(), where+" - "+whereArgs);
+                cr.update(transactionsURI, values, where, whereArgs);
+            }
         }
-        else {
-            Log.e(transactionsURI.toString(), where+" - "+whereArgs);
-            cr.update(transactionsURI, values, where, whereArgs);
-        }
+        else cr.insert(transactionsURI, values);
+
     }
 
     @Override

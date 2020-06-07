@@ -285,7 +285,13 @@ public class TransactionListInteractor extends IntentService implements ITransac
                             cursor.getString(itemDescPos), cursor.getInt(intervalPos), cursor.getString(endDatePos), type1);
 
                     //Get connection
-                    URL url = new URL( url1+"/"+transaction.getId().toString());
+                    URL url;
+
+                    if(transaction.getId()!= null && transaction.getId()!=0) url = new URL( url1+"/"+transaction.getId().toString());
+                    else url = new URL(url1);
+
+                    Log.e(url.getPath(), String.valueOf(transaction.getId()));
+
                     HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                     urlConnection.setDoOutput(true);
                     urlConnection.setChunkedStreamingMode(0);
@@ -306,10 +312,12 @@ public class TransactionListInteractor extends IntentService implements ITransac
                         if (statusCode ==  200) {
                             InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
                             String response = convertStreamToString(inputStream);
+                            Log.e("Response", response);
 
                         } else {
                             InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
                             String response = convertStreamToString(inputStream);
+                            Log.e("Response", response);
                         }
 
                     }
@@ -522,7 +530,7 @@ public class TransactionListInteractor extends IntentService implements ITransac
         if (cursor != null){
             cursor.moveToFirst();
             int idPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
-            int internalId = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
+            int internalId = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID);
             int datePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_DATE);
             int titlePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TITLE);
             int amountPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_AMOUNT);
