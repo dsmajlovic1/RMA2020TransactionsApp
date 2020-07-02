@@ -82,7 +82,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     public ITransactionListPresenter getPresenter(){
         if(transactionListPresenter == null){
-            this.transactionListPresenter = new TransactionListPresenter(this, getActivity());
+            this.transactionListPresenter = new TransactionListPresenter(this, this.getContext());
         }
         return transactionListPresenter;
     }
@@ -122,6 +122,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View fragmentView = inflater.inflate(R.layout.fragment_list, container, false);
 
+        transactionListPresenter = new TransactionListPresenter(this, this.getContext());
         currentMonth = new Month(Calendar.getInstance().getTime());
         //Get view resources
         filterBySpinner = (Spinner) fragmentView.findViewById(R.id.filterBySpinner);
@@ -189,6 +190,9 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
          */
         getBudgetPresenter().getAccount();
         //refreshCurrentMonthTransactions();
+
+        transactionListPresenter.filterByMonth(currentMonth);
+        refreshFilter();
         return fragmentView;
     }
 
@@ -241,6 +245,7 @@ public class TransactionListFragment extends Fragment implements ITransactionLis
 
     @Override
     public void refreshCurrentMonthTransactions(){
+        if(transactionListPresenter == null) transactionListPresenter = new TransactionListPresenter(this, this.getContext());
         transactionListPresenter.filterByMonth(currentMonth);
         refreshFilter();
     }

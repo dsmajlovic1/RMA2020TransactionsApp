@@ -151,18 +151,28 @@ public class TransactionListPresenter implements ITransactionListPresenter, Tran
 
     @Override
     public void getMoviesCursor(Month month) {
-        transactionListInteractor = new TransactionListInteractor(context);
-        transactionListView.setCursor(transactionListInteractor.getMonthTransactionsCursor());
+        try{
+            transactionListInteractor = new TransactionListInteractor(context);
+            transactionListView.setCursor(transactionListInteractor.getMonthTransactionsCursor());
+        }catch (NullPointerException e){
+            Log.e("Startup", e.toString());
+        }
+
     }
 
     @Override
     public void uploadAllData(ResultReceiver mainActivityReceiver) {
-        String query = "/transactions";
-        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
-        intent.putExtra("type", "UPLOAD");
-        intent.putExtra("query", query);
-        intent.putExtra("receiver", mainActivityReceiver);
-        context.getApplicationContext().startService(intent);
+        try{
+            String query = "/transactions";
+            Intent intent = new Intent(Intent.ACTION_SYNC, null, context, TransactionListInteractor.class);
+            intent.putExtra("type", "UPLOAD");
+            intent.putExtra("query", query);
+            intent.putExtra("receiver", mainActivityReceiver);
+            context.getApplicationContext().startService(intent);
+        }catch (NullPointerException e){
+            Log.e("Startup", e.toString());
+        }
+
     }
 
     @Override

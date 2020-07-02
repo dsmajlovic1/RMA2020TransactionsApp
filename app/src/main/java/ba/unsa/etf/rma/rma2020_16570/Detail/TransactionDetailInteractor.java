@@ -52,21 +52,30 @@ public class TransactionDetailInteractor extends IntentService implements ITrans
             String[] kolone = null;
             Uri adresa = ContentUris.withAppendedId(Uri.parse("content://rma.provider.transactions/elements"), TransactionContentProvider.ALL_ROWS);
             String where = "id = ?";
-            String whereArgs[] = {transaction.getId().toString()};
+            String whereArgs[] = {String.valueOf(transaction.getId())};
             String order = null;
             Cursor cursor = cr.query(adresa,kolone,where,whereArgs,order);
 
-            Log.w("Row count", String.valueOf(cursor.getCount()));
             if(cursor.getCount()== 0){
                 cr.insert(transactionsURI, values);
-                Log.w("Save", "end");
             }
             else {
-                Log.e(transactionsURI.toString(), where+" - "+whereArgs);
                 cr.update(transactionsURI, values, where, whereArgs);
             }
         }
-        else cr.insert(transactionsURI, values);
+        else {
+            if(transaction.getInternalId() == null) cr.insert(transactionsURI, values);
+            else{
+                String where = "_id = ?";
+                String whereArgs[] = {transaction.getInternalId().toString()};
+                cr.update(transactionsURI, values, where, whereArgs);
+            }
+        }
+
+    }
+
+    @Override
+    public void update(Transaction transaction, Context context) {
 
     }
 
@@ -88,7 +97,6 @@ public class TransactionDetailInteractor extends IntentService implements ITrans
         //queue up for deletion
         if(cursor.getCount()== 0){
             cr.insert(transactionsURI, values);
-            Log.w("Save", "end");
         }
         else {
             //cr.update(transactionsURI, values, where, whereArgs);

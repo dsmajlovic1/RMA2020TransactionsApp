@@ -120,6 +120,7 @@ public class TransactionDetailFragment extends Fragment implements ConnectivityB
                     getPresenter().setTransaction(getArguments().getParcelable("transaction"));
                     transaction = getPresenter().getTransaction();
                     oldTransaction = new Transaction(transaction);
+                    oldTransaction.setInternalId(transaction.getInternalId());
 
                     getTransactionDetailInteractor().save(oldTransaction, getContext());
 
@@ -184,7 +185,6 @@ public class TransactionDetailFragment extends Fragment implements ConnectivityB
             } catch (ParseException e) {
                 date = null;
             }
-            Log.e(dateEditText.getText().toString().trim(), date.toString());
             transaction.setDate(date);
             transaction.setAmount(Double.parseDouble(amountEditText.getText().toString()));
             transaction.setTittle(titleEditText.getText().toString());
@@ -212,6 +212,7 @@ public class TransactionDetailFragment extends Fragment implements ConnectivityB
             else toggleConnection = false;
             //Change
             if(typeOfActivity.equals("edit")){
+                transaction.setInternalId(oldTransaction.getInternalId());
                 if(toggleConnection) getCommunication().edit(transaction, oldTransaction);
                 else{
                     getTransactionDetailInteractor().save(transaction, getContext());

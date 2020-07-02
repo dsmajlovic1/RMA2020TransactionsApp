@@ -7,6 +7,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -272,7 +273,7 @@ public class TransactionListInteractor extends IntentService implements ITransac
                 Boolean continueCur = cursor.moveToFirst();
                 while (continueCur){
                     int idPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
-                    int internalId = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_ID);
+                    int internalId = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID);
                     int datePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_DATE);
                     int titlePos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_TITLE);
                     int amountPos = cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_AMOUNT);
@@ -284,13 +285,12 @@ public class TransactionListInteractor extends IntentService implements ITransac
                     transaction = new Transaction(cursor.getInt(idPos), cursor.getString(datePos), cursor.getString(titlePos), cursor.getDouble(amountPos),
                             cursor.getString(itemDescPos), cursor.getInt(intervalPos), cursor.getString(endDatePos), type1);
 
+                    if(String.valueOf(cursor.getInt(internalId)).equals("null")) transaction.setInternalId(cursor.getInt(internalId));
                     //Get connection
                     URL url;
 
                     if(transaction.getId()!= null && transaction.getId()!=0) url = new URL( url1+"/"+transaction.getId().toString());
                     else url = new URL(url1);
-
-                    Log.e(url.getPath(), String.valueOf(transaction.getId()));
 
                     HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                     urlConnection.setDoOutput(true);
@@ -314,6 +314,14 @@ public class TransactionListInteractor extends IntentService implements ITransac
                             String response = convertStreamToString(inputStream);
                             Log.e("Response", response);
 
+                            ContentResolver cr2 = getApplicationContext().getContentResolver();
+                            Uri transactionsURI = Uri.parse("content://rma.provider.transactions/elements");
+
+                            String where2 = "id = ?";
+                            String whereArgs2[] = {String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.TRANSACTION_INTERNAL_ID)))};
+
+                            cr2.delete(transactionsURI, where2, whereArgs2);
+
                         } else {
                             InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
                             String response = convertStreamToString(inputStream);
@@ -325,6 +333,8 @@ public class TransactionListInteractor extends IntentService implements ITransac
 
                     continueCur = cursor.moveToNext();
                 }
+
+
                 //Delete transactions
 
 
@@ -341,23 +351,38 @@ public class TransactionListInteractor extends IntentService implements ITransac
                 continueCur = cursor.moveToFirst();
 
                 while (continueCur){
-                    URL url = new URL( url1+"/"+String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("id"))));
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestMethod("DELETE");
+                    try{
+                        URL url = new URL( url1+"/"+String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("id"))));
+                        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                        urlConnection.setRequestMethod("DELETE");
 
-                    int statusCode = urlConnection.getResponseCode();
+                        int statusCode = urlConnection.getResponseCode();
 
-                    if (statusCode ==  200) {
-                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                        String response = convertStreamToString(inputStream);
+                        if (statusCode ==  200) {
+                            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                            String response = convertStreamToString(inputStream);
 
-                    } else {
-                        InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                        String response = convertStreamToString(inputStream);
+                            ContentResolver cr3 = getApplicationContext().getContentResolver();
+                            Uri transactionsURI = Uri.parse("content://rma.provider.transactions/elements");
+
+                            String where2 = "_id = ?";
+                            String whereArgs2[] = {String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(TransactionDBOpenHelper.DELETE_ID)))};
+
+                            cr3.delete(transactionsURI, where2, whereArgs2);
+
+                        } else {
+                            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                            String response = convertStreamToString(inputStream);
+                        }
+
+                        urlConnection.disconnect();
+                        continueCur = cursor.moveToNext();
+                    }
+                    catch (CursorIndexOutOfBoundsException e){
+                        Log.e("Out of bounds",e.toString());
+                        break;
                     }
 
-                    urlConnection.disconnect();
-                    cursor.moveToNext();
                 }
 
                 bundle.putString("type", "UPLOAD");

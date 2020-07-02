@@ -130,6 +130,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         registerReceiver(connectivityBroadcastReceiver, iFilter);
 
     }
+
     @Override
     public void onResume() {
 
@@ -168,6 +169,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                     arrayList.set(0,graphsFragment);
                     arrayList.set(1, transactionListFragment);
                     arrayList.set(2, budgetFragment);
+                    transactionListFragment.refreshCurrentMonthTransactions();
                     pagerAdapter.setArrayList(arrayList);
 
                 }
@@ -198,6 +200,7 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
                 arrayList.set(1, transactionListFragment);
                 arrayList.set(2, budgetFragment);
                 transactionListFragment.notifyTransactionListDataSetChanged();
+                transactionListFragment.refreshCurrentMonthTransactions();
 
                 pagerAdapter.setArrayList(arrayList);
                 pagerAdapter.notifyItemRemoved(1);
@@ -295,11 +298,13 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
             listFragment = (TransactionListFragment) fragmentManager.findFragmentByTag("list");
             if(listFragment!= null){
                 listFragment.updateCurrentTransaction(changed);
+                listFragment.refreshCurrentMonthTransactions();
             }
         }
         else {
             listFragment = (TransactionListFragment) arrayList.get(arrayList.indexOf(transactionListFragment));
             listFragment.updateCurrentTransaction(changed);
+            listFragment.refreshCurrentMonthTransactions();
         }
         newTransaction = changed;
         GraphsPresenter alerts = new GraphsPresenter(getApplicationContext(), this);
@@ -568,7 +573,9 @@ public class MainActivity extends FragmentActivity implements TransactionListFra
         Boolean connected = resultData.getBoolean("connected");
         switch (resultCode){
             case TransactionListInteractor.STATUS_FINISHED:
-                changeWorkMode(connected);
+                if(!connected)changeWorkMode(connected);
+                if(resultData.getString("type").equals("UPLOAD")) transactionListFragment.refreshCurrentMonthTransactions();
+                transactionListFragment.notifyTransactionListDataSetChanged();
                 break;
             case TransactionListInteractor.STATUS_ERROR:
             default:break;
